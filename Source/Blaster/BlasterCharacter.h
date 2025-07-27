@@ -47,6 +47,14 @@ class ABlasterCharacter : public ACharacter
 public:
 	ABlasterCharacter();
 	
+	UFUNCTION(BlueprintCallable)
+	void OpenLobby();
+
+	UFUNCTION(BlueprintCallable)
+	void CallOpenLevel(const FString& Address);
+
+	UFUNCTION(BlueprintCallable)
+	void CallClientTravel(const FString& Address);
 
 protected:
 
