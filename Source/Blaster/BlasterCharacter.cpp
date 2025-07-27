@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -19,6 +20,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 // ABlasterCharacter
 
 ABlasterCharacter::ABlasterCharacter()
+:CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -64,7 +66,7 @@ ABlasterCharacter::ABlasterCharacter()
 			GEngine->AddOnScreenDebugMessage(
 				-1,
 				15.f,
-				FColor::Red,
+				FColor::Blue,
 				FString::Printf(TEXT("Found Online Subsystem: %s"), *OnlineSub->GetSubsystemName().ToString())
 			);
 		}
@@ -106,6 +108,66 @@ void ABlasterCharacter::BeginPlay()
 		if (UEnhancedInputLocalPlayerSubsystem *Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+}
+
+void ABlasterCharacter::CreateGameSession()
+{
+	UE_LOG(LogTemp, Warning, TEXT("1. CreateGameSession"))
+	// called when pressing the 1 key.
+	if(!OnlineSessionInterface.IsValid())
+		return;
+
+	auto existingSession = OnlineSessionInterface->GetNamedSession(NAME_GameSession);
+
+
+	if(existingSession != nullptr){
+		// 销毁旧的Session
+
+		UE_LOG(LogTemp, Warning, TEXT("2. existingSession: %s."), *existingSession->SessionName.ToString())
+		OnlineSessionInterface->DestroySession(NAME_GameSession);
+	}
+
+	/* 
+		将我们的委托CreateSessionCompleteDelegate对象添加到Session Interface委托列表中,
+		一旦创建一个会话完成时，委托会被调用	
+	*/
+
+	UE_LOG(LogTemp, Warning, TEXT("3. Creating session..."))
+	OnlineSessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
+
+	TSharedPtr<FOnlineSessionSettings> SessionSetting = MakeShareable(new FOnlineSessionSettings());
+	SessionSetting->bIsLANMatch = false;
+	SessionSetting->NumPublicConnections = 4;
+	SessionSetting->bAllowJoinInProgress = true;
+	SessionSetting->bAllowJoinViaPresence = true;
+	SessionSetting->bShouldAdvertise = true;
+	SessionSetting->bUsesPresence = true;
+	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSessionInterface->CreateSession(*localPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSetting);
+}
+
+
+void ABlasterCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if(bWasSuccessful){
+		if(GEngine){
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Green,
+				FString::Printf(TEXT("Created session: %s"), *SessionName.ToString())
+			);
+		}
+	}else{
+		if(GEngine){
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString::Printf(TEXT("Failed to create session!"))
+			);
 		}
 	}
 }
