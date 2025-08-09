@@ -11,6 +11,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
     // MenuSetup在level蓝图中
     NumPublicConnections = NumberOfPublicConnections;
     MatchType = TypeOfMatch;
+    PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
     AddToViewport();
     SetVisibility(ESlateVisibility::Visible);
     SetIsFocusable(true);
@@ -83,7 +84,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
         UWorld *world = GetWorld();
         if (world)
         {
-            world->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
+            world->ServerTravel(PathToLobby);
         }
     }
 }

@@ -59,4 +59,5 @@ private:
 
 	int32 NumPublicConnections{4};
 	FString MatchType{"FreeForAll"};
+	FString PathToLobby{TEXT("")};
 };
