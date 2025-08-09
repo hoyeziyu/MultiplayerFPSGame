@@ -3,6 +3,7 @@
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 
 UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem()
     : CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
@@ -39,6 +40,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
     LastSessionSettings->bAllowJoinViaPresence = true;
     LastSessionSettings->bShouldAdvertise = true;
     LastSessionSettings->bUsesPresence = true;
+    LastSessionSettings->bUseLobbiesIfAvailable = true;
     LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
     const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
@@ -59,8 +61,7 @@ void UMultiplayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
     LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
     LastSessionSearch->MaxSearchResults = MaxSearchResults;
     LastSessionSearch->bIsLanQuery = IOnlineSubsystem::Get()->GetSubsystemName() == TEXT("NULL") ? true : false;
-    // todo:不知道为什么，这里的SEARCH_PRESENCE编译不通过！！！改为FName(TEXT("PRESENCESEARCH"))
-    LastSessionSearch->QuerySettings.Set(FName(TEXT("PRESENCESEARCH")), true, EOnlineComparisonOp::Equals);
+    LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
     const ULocalPlayer *localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
     bool isFindSession = SessionInterface->FindSessions(*localPlayer->GetPreferredUniqueNetId(), LastSessionSearch.ToSharedRef());
