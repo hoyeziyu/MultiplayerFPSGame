@@ -9,7 +9,6 @@
 class UButton;
 class UMultiplayerSessionsSubsystem;
 
-
 /**
  *
  */
@@ -24,6 +23,13 @@ public:
 
 protected:
 	virtual bool Initialize() override;
+	virtual void NativeDestruct() override;
+
+	/*
+		Callbacks for the custom delegates (eg:FMultiplayerOnCreateSessionComplete) on the MultiplayerSessionsSubsystem
+	*/
+	UFUNCTION()
+	void OnCreateSession(bool bWasSuccessful);
 
 private:
 	UFUNCTION()
@@ -32,6 +38,8 @@ private:
 	UFUNCTION()
 	void JoinButtonClicked();
 
+	void MenuTearDown();
+
 private:
 	// 如果这样做，C++变量名HostButton必须和widget蓝图中的HostButton变量名一致，且widget蓝图中的HostButton作为C++的HostButton的父亲存在
 	UPROPERTY(meta = (BindWidget))
@@ -39,7 +47,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton *JoinButton;
 
-
 	// The subsystem designed to handle all online session functionality
-	UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
+	UMultiplayerSessionsSubsystem *MultiplayerSessionsSubsystem;
+
+	int32 NumPublicConnections{4};
+	FString MatchType{"FreeForAll"};
 };

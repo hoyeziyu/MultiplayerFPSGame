@@ -2,6 +2,7 @@
 
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
 
 UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem()
     : CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
@@ -19,6 +20,34 @@ UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem()
 
 void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType)
 {
+    if(!SessionInterface.IsValid())
+        return;
+    auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
+    if (ExistingSession != nullptr)
+    {
+        // Destroy the existing session before creating a new one
+        SessionInterface->DestroySession(NAME_GameSession);
+    }
+
+    // store the delegate in a FDelegateHandle so we can later remove it from the delegate list
+    CreateSessionCompleteDelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
+    
+    LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
+    LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == TEXT("NULL") ? true : false;
+    LastSessionSettings->NumPublicConnections = NumPublicConnections;
+    LastSessionSettings->bAllowJoinInProgress = true;
+    LastSessionSettings->bAllowJoinViaPresence = true;
+    LastSessionSettings->bShouldAdvertise = true;
+    LastSessionSettings->bUsesPresence = true;
+    LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+    const ULocalPlayer *LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+    bool isSuccessCreate = SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings);
+    if(!isSuccessCreate){
+        SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+        MultiplayerOnCreateSessionComplete.Broadcast(isSuccessCreate);
+    }
+    
 }
 
 void UMultiplayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
@@ -39,6 +68,11 @@ void UMultiplayerSessionsSubsystem::StartSession()
 
 void UMultiplayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+    if(SessionInterface){
+        SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+    }
+
+    MultiplayerOnCreateSessionComplete.Broadcast(bWasSuccessful);
 }
 
 void UMultiplayerSessionsSubsystem::OnFindSessionsComplete(bool bWasSuccessful)

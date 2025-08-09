@@ -8,6 +8,9 @@
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
+
+    NumPublicConnections = NumberOfPublicConnections;
+    MatchType = TypeOfMatch;
     AddToViewport();
     SetVisibility(ESlateVisibility::Visible);
     SetIsFocusable(true);
@@ -31,6 +34,12 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
     {
         MultiplayerSessionsSubsystem = gameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
     }
+
+    if (MultiplayerSessionsSubsystem)
+    {
+        // 将我们的回调绑定在委托上面
+        MultiplayerSessionsSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
+    }
 }
 
 bool UMenu::Initialize()
@@ -48,18 +57,39 @@ bool UMenu::Initialize()
     return true;
 }
 
-void UMenu::HostButtonClicked()
+void UMenu::NativeDestruct()
+{
+    MenuTearDown();
+    Super::NativeDestruct();
+}
+
+void UMenu::OnCreateSession(bool bWasSuccessful)
 {
     if (GEngine)
     {
         GEngine->AddOnScreenDebugMessage(
             -1,
             15.f,
-            FColor::Blue,
-            FString(TEXT("HostButtonClicked!")));
+            FColor::Green,
+            FString::Printf(TEXT("UMenu::OnCreateSession: %s"), bWasSuccessful ? TEXT("Success") : TEXT("Failed")));
     }
 
-    MultiplayerSessionsSubsystem->CreateSession(4, FString("FreeForAll"));
+    if (bWasSuccessful)
+    {
+        UWorld *world = GetWorld();
+        if (world)
+        {
+            world->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
+        }
+    }
+}
+
+void UMenu::HostButtonClicked()
+{
+    if (MultiplayerSessionsSubsystem)
+    {
+        MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+    }
 }
 
 void UMenu::JoinButtonClicked()
@@ -71,5 +101,19 @@ void UMenu::JoinButtonClicked()
             15.f,
             FColor::Yellow,
             FString(TEXT("JoinButtonClicked!")));
+    }
+}
+
+void UMenu::MenuTearDown()
+{
+    RemoveFromParent();
+
+    APlayerController *playerController = GetWorld()->GetFirstPlayerController();
+    if (playerController)
+    {
+
+        FInputModeGameOnly inputModeData;
+        playerController->SetInputMode(inputModeData);
+        playerController->SetShowMouseCursor(false);
     }
 }
