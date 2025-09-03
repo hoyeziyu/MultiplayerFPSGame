@@ -13,6 +13,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class UWidgetComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -96,4 +97,8 @@ private:
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;	
+
+	// 意味我们将private变量暴露在蓝图中
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UWidgetComponent> OverheadWidget;
 };
