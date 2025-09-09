@@ -14,6 +14,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class UWidgetComponent;
+class AWeapon;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -63,6 +64,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallClientTravel(const FString &Address);
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOverlappingWeapon(AWeapon* Weapon);
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue &Value);
@@ -70,7 +75,6 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue &Value);
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
@@ -86,6 +90,22 @@ protected:
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnFindSessionsComplete(bool bWasSuccessful);
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+
+	// OnRep_OverlappingWeapon中OverlappingWeapon是复制的变量名（约定），会自动调用
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+protected:
+
+	/*
+		Replicated只在变量改变时才起作用，并不会复制每一帧或每次网络更新；一旦其值在server上更改立即复制到所有client;
+		ReplicatedUsing = OnRep_OverlappingWeapon表示当变量被replicated时会调用OnRep_OverlappingWeapon函数(代表通知)，
+		但是在server中不会被调用(Replicated的工作方式只有一种，就是从server复制到client，所以永远不会复制到server)
+		所以server如何处理显示复制的问题？？？？？？？？
+
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	TObjectPtr<AWeapon> OverlappingWeapon;
 
 public:
 	// point to the online session interface
