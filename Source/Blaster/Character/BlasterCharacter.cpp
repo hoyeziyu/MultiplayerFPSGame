@@ -158,13 +158,28 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 	}
 }
 
-/*
-	当按下装备按钮时调用，不管在server还是client都会被调用
-*/
+
 void ABlasterCharacter::EquipButtonPressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("EquipButtonPressed: %s"), *GetName());
-	if (CombatComp && HasAuthority())
+	if(CombatComp){
+		if(HasAuthority()){
+			// server
+			CombatComp->EquipWeapon(OverlappingWeapon);
+		}
+		else{
+			// client   --- 远程过程调用 是 可以在一台机器（client）上调用的函数，并在另一台机器（server）上执行 ---
+			// client按 E就会发送RPC请求到server，server会调用ServerEquipButtonPressed_Implementation函数
+			ServerEquipButtonPressed();
+		}
+	}
+}
+
+/*
+	_Implementation 必须跟在函数声明后面,约定
+*/
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (CombatComp)
 	{
 		CombatComp->EquipWeapon(OverlappingWeapon);
 	}
@@ -359,7 +374,10 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 
-		// EquipAction
+		/*
+			EquipAction
+			当按下装备按钮时调用，不管在server还是client都会被调用
+		*/
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 	}
 	else

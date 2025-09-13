@@ -35,6 +35,11 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
-	EquippedWeapon->SetOwner(Character);	// 设置武器的拥有者，应该为了方便销毁资源
-	EquippedWeapon->ShowPickupWidget(false);
+	EquippedWeapon->SetOwner(Character);	// 设置武器的拥有者，应该为了方便销毁资源，SetOwner已经是可复制的
+	/*
+		这里的有些变化，并不会同步到client上，处理办法：
+			a. RPC可以双向发送，可以创建从server调用并在client上执行的RPC
+			b. 变量复制
+	*/
+	// EquippedWeapon->ShowPickupWidget(false);	不放这里了
 }

@@ -105,6 +105,13 @@ protected:
 
 	void EquipButtonPressed();
 
+	/*
+		RPC函数，必须指定rpc是否可靠（信息从client发送到server，不可靠信息可能会丢包），server RPC只会在server上执行
+		--- 远程过程调用 是 可以在一台机器（client）上调用的函数，并在另一台机器（server）上执行 ---
+	*/
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
 protected:
 
 	/*
