@@ -32,4 +32,12 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool mbIsAccelerating = false;
+
+	/*
+		动画蓝图存在于所有机器上的每个角色；
+		但是Anim Instance只能访问该机器上的变量
+	
+	*/
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool mbWeaponEquipped = false;
 };

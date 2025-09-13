@@ -73,6 +73,8 @@ public:
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
+	bool IsWeaponEquipped();
+
 	virtual void PostInitializeComponents() override;
 
 protected:
