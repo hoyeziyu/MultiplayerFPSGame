@@ -67,6 +67,8 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComp->SetIsReplicated(true);	// 设置为复制组件
 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character)
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
@@ -176,6 +178,18 @@ void ABlasterCharacter::EquipButtonPressed()
 			// client按 E就会发送RPC请求到server，server会调用ServerEquipButtonPressed_Implementation函数
 			ServerEquipButtonPressed();
 		}
+	}
+}
+
+void ABlasterCharacter::CrouchButtonPressed()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
 	}
 }
 
@@ -384,6 +398,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 			当按下装备按钮时调用，不管在server还是client都会被调用
 		*/
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
 	}
 	else
 	{

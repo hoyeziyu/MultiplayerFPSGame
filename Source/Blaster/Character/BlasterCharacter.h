@@ -52,6 +52,9 @@ class ABlasterCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *EquipAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *CrouchAction;
+
 public:
 	ABlasterCharacter();
 
@@ -106,6 +109,7 @@ protected:
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
 	void EquipButtonPressed();
+	void CrouchButtonPressed();
 
 	/*
 		RPC函数，必须指定rpc是否可靠（信息从client发送到server，不可靠信息可能会丢包），server RPC只会在server上执行
