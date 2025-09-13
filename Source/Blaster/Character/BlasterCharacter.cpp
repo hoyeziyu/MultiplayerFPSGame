@@ -141,6 +141,11 @@ bool ABlasterCharacter::IsWeaponEquipped()
 	return CombatComp && CombatComp->EquippedWeapon;
 }
 
+bool ABlasterCharacter::IsAiming()
+{
+    return (CombatComp && CombatComp->bAiming);
+}
+
 void ABlasterCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -193,11 +198,27 @@ void ABlasterCharacter::CrouchButtonPressed()
 	}
 }
 
-/*
-	_Implementation 必须跟在函数声明后面,约定
-*/
+void ABlasterCharacter::AimButtonPressed()
+{
+	if (CombatComp)
+	{
+		CombatComp->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimButtonReleased()
+{
+	if (CombatComp)
+	{
+		CombatComp->SetAiming(false);
+	}
+}
+
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
+	/*
+		_Implementation 必须跟在函数声明后面,约定（所有的server RPC都必须以这个方式命名）
+	*/
 	if (CombatComp)
 	{
 		CombatComp->EquipWeapon(OverlappingWeapon);
@@ -399,6 +420,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		*/
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
 	}
 	else
 	{
