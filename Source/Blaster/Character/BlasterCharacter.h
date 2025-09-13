@@ -15,6 +15,7 @@ class UInputAction;
 struct FInputActionValue;
 class UWidgetComponent;
 class AWeapon;
+class UCombatComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -47,6 +48,10 @@ class ABlasterCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *LookAction;
 
+	/** =Equip Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *EquipAction;
+
 public:
 	ABlasterCharacter();
 
@@ -67,6 +72,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	virtual void PostInitializeComponents() override;
 
 protected:
 	/** Called for movement input */
@@ -92,8 +99,11 @@ protected:
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
 	// OnRep_OverlappingWeapon中OverlappingWeapon是复制的变量名（约定），会自动调用
+	// OnRep_OverlappingWeapon的参数只能是是被复制的变量类型（eg:AWeapon*）
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+	void EquipButtonPressed();
 
 protected:
 
@@ -121,4 +131,7 @@ private:
 	// 意味我们将private变量暴露在蓝图中
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UWidgetComponent> OverheadWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCombatComponent> CombatComp;
 };
