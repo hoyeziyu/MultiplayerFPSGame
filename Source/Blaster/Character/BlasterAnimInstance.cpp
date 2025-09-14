@@ -41,8 +41,11 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     FRotator aimRotation = mBlasterCharacterPtr->GetBaseAimRotation();
     FRotator movementRotation = UKismetMathLibrary::MakeRotFromX(mBlasterCharacterPtr->GetVelocity());
     UE_LOG(LogTemp, Warning, TEXT("AimRotation: %s, AimRotation Yaw: %f, movementRotation Yaw: %f,"), *aimRotation.ToString(), aimRotation.Yaw, movementRotation.Yaw);
-    YawOffset = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation).Yaw;
     
+    FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation);
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
+	YawOffset = DeltaRotation.Yaw;
+
     // Character Lean两帧（当前帧和上一帧）之间的Delta Yaw
     CharacterRotationLastFrame = CharacterRotation;
     CharacterRotation = mBlasterCharacterPtr->GetActorRotation();

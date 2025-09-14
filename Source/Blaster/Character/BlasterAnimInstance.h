@@ -53,7 +53,11 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float Lean;
-
+	/*
+		可以设置interpolation, 使blendspace中的动画切换更平滑，
+		有个副作用是：当yaw值从-180度跳到+180度时，会经过0度，（-180 -> 0 -> 180）导致动画播放异常（大概这意思！！！）
+	*/
 	FRotator CharacterRotationLastFrame;
 	FRotator CharacterRotation;
+	FRotator DeltaRotation;
 };
