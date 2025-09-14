@@ -3,6 +3,7 @@
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -15,11 +16,12 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 {
     Super::NativeUpdateAnimation(DeltaTime);
 
-    if(mBlasterCharacterPtr == nullptr){
+    if (mBlasterCharacterPtr == nullptr)
+    {
         mBlasterCharacterPtr = Cast<ABlasterCharacter>(TryGetPawnOwner());
     }
-    if(mBlasterCharacterPtr == nullptr) return;
-
+    if (mBlasterCharacterPtr == nullptr)
+        return;
 
     FVector velocity = mBlasterCharacterPtr->GetVelocity();
     velocity.Z = 0.f;
@@ -30,4 +32,22 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     mbWeaponEquipped = mBlasterCharacterPtr->IsWeaponEquipped();
     bIsCrouched = mBlasterCharacterPtr->bIsCrouched;
     bAiming = mBlasterCharacterPtr->IsAiming();
+
+    // Offset Yaw for Strafing
+    /*
+    BaseAimRotation是一个全局rotation，并不是角色本地的rotation，范围（-180，180），Yaw的值是角色面向world的方向的X轴夹角；
+    movementRotation对应于GetBaseAimRotation()相同的全局旋转
+    */
+    FRotator aimRotation = mBlasterCharacterPtr->GetBaseAimRotation();
+    FRotator movementRotation = UKismetMathLibrary::MakeRotFromX(mBlasterCharacterPtr->GetVelocity());
+    UE_LOG(LogTemp, Warning, TEXT("AimRotation: %s, AimRotation Yaw: %f, movementRotation Yaw: %f,"), *aimRotation.ToString(), aimRotation.Yaw, movementRotation.Yaw);
+    YawOffset = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation).Yaw;
+    
+    // Character Lean两帧（当前帧和上一帧）之间的Delta Yaw
+    CharacterRotationLastFrame = CharacterRotation;
+    CharacterRotation = mBlasterCharacterPtr->GetActorRotation();
+    const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
+    const float Target = Delta.Yaw / DeltaTime;
+    const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
+    Lean = FMath::Clamp(Interp, -90.f, 90.f);
 }

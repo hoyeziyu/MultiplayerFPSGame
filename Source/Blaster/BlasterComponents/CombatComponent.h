@@ -28,12 +28,20 @@ protected:
 
 	void SetAiming(bool bIsAiming);
 
+	/*
+		server RPC, RPC可以有参数; OnRep_ 通知函数不能有参数；
+		在复制变量之前，将自动获取复制变量的最新值(last value)，
+	*/
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 private:
 	TObjectPtr<ABlasterCharacter> Character;
-	UPROPERTY(Replicated)
+
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	TObjectPtr<AWeapon> EquippedWeapon;
 
 	UPROPERTY(Replicated)
