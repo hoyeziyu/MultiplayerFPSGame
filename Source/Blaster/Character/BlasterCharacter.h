@@ -60,6 +60,7 @@ class ABlasterCharacter : public ACharacter
 
 public:
 	ABlasterCharacter();
+	virtual void Tick(float DeltaTime) override;
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
@@ -83,6 +84,9 @@ public:
 	bool IsAiming();
 
 	virtual void PostInitializeComponents() override;
+
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 
 protected:
 	/** Called for movement input */
@@ -116,6 +120,7 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
 
 	/*
 		RPC函数，必须指定rpc是否可靠（信息从client发送到server，不可靠信息可能会丢包），server RPC只会在server上执行
@@ -153,4 +158,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> CombatComp;
+
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
 };

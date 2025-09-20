@@ -35,7 +35,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
     // Offset Yaw for Strafing
     /*
-    BaseAimRotation是一个全局rotation，并不是角色本地的rotation，范围（-180，180），Yaw的值是角色面向world的方向的X轴夹角；
+    BaseAimRotation是一个全局rotation，并不是角色本地的rotation，范围（-180，180），Yaw的值是角色面向world的方向的X轴夹角；（相当于鼠标左右移动）
     movementRotation对应于GetBaseAimRotation()相同的全局旋转
     */
     FRotator aimRotation = mBlasterCharacterPtr->GetBaseAimRotation();
@@ -53,4 +53,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     const float Target = Delta.Yaw / DeltaTime;
     const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
     Lean = FMath::Clamp(Interp, -90.f, 90.f);
+
+    AO_Yaw = mBlasterCharacterPtr->GetAO_Yaw();
+	AO_Pitch = mBlasterCharacterPtr->GetAO_Pitch();
 }

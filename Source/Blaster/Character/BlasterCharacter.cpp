@@ -19,6 +19,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -90,6 +91,12 @@ ABlasterCharacter::ABlasterCharacter()
 				FString::Printf(TEXT("Found Online Subsystem: %s"), *OnlineSub->GetSubsystemName().ToString()));
 		}
 	}
+}
+
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	AimOffset(DeltaTime);
 }
 
 void ABlasterCharacter::OpenLobby()
@@ -217,6 +224,31 @@ void ABlasterCharacter::AimButtonReleased()
 	{
 		CombatComp->SetAiming(false);
 	}
+}
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	if(CombatComp && CombatComp->EquippedWeapon==nullptr) return;
+	
+	FVector velocity = GetVelocity();
+	velocity.Z = 0;
+	float speed = velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	if(speed == 0 && !bIsInAir){ // 站着不动，不跳
+		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);	// 鼠标左右移动的值
+		FRotator deltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
+		AO_Yaw = deltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;	
+	}
+	if (speed > 0.f || bIsInAir) // running, or jumping
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;	// 移动过程中 yaw保持0
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;	// 鼠标上下移动的值
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
