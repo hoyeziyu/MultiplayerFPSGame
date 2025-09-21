@@ -7,10 +7,9 @@
 #include "BlasterAnimInstance.generated.h"
 
 class ABlasterCharacter;
+class AWeapon;
 
-/**
- *
- */
+
 UCLASS()
 class BLASTER_API UBlasterAnimInstance : public UAnimInstance
 {
@@ -41,6 +40,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool mbWeaponEquipped = false;
 
+	AWeapon* EquippedWeapon;
+
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsCrouched;
 
@@ -66,4 +67,11 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
+
+	/*
+		fabric ik是一种代表前进、后退的算法达到逆运动学，逆运动学使用在机器人和动画上，为了把其中的一个bone或者jonts放在skeleton的一个特定位置;
+		在这里是为了让左手放在枪的左手握把上,每个武器都有不同的位置，可以用socket来标记左手握把的位置（统一命名）
+	*/
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	FTransform LeftHandTransform;
 };

@@ -4,6 +4,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -30,6 +31,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     mbIsInAir = mBlasterCharacterPtr->GetCharacterMovement()->IsFalling();
     mbIsAccelerating = mBlasterCharacterPtr->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
     mbWeaponEquipped = mBlasterCharacterPtr->IsWeaponEquipped();
+    EquippedWeapon = mBlasterCharacterPtr->GetEquippedWeapon();
     bIsCrouched = mBlasterCharacterPtr->bIsCrouched;
     bAiming = mBlasterCharacterPtr->IsAiming();
 
@@ -41,10 +43,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     FRotator aimRotation = mBlasterCharacterPtr->GetBaseAimRotation();
     FRotator movementRotation = UKismetMathLibrary::MakeRotFromX(mBlasterCharacterPtr->GetVelocity());
     UE_LOG(LogTemp, Warning, TEXT("AimRotation: %s, AimRotation Yaw: %f, movementRotation Yaw: %f,"), *aimRotation.ToString(), aimRotation.Yaw, movementRotation.Yaw);
-    
+
     FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation);
-	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
-	YawOffset = DeltaRotation.Yaw;
+    DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
+    YawOffset = DeltaRotation.Yaw;
 
     // Character Lean两帧（当前帧和上一帧）之间的Delta Yaw
     CharacterRotationLastFrame = CharacterRotation;
@@ -55,5 +57,16 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     Lean = FMath::Clamp(Interp, -90.f, 90.f);
 
     AO_Yaw = mBlasterCharacterPtr->GetAO_Yaw();
-	AO_Pitch = mBlasterCharacterPtr->GetAO_Pitch();
+    AO_Pitch = mBlasterCharacterPtr->GetAO_Pitch();
+
+    if (mbWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && mBlasterCharacterPtr->GetMesh())
+    {   //                                                                                                                        相对的世界空间
+        LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+        FVector OutPosition;
+        FRotator OutRotation;
+        // 从世界空间转换到骨骼空间                             skeleton上bone的名字       位置                     旋转
+        mBlasterCharacterPtr->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+        LeftHandTransform.SetLocation(OutPosition);
+        LeftHandTransform.SetRotation(FQuat(OutRotation));
+    }
 }

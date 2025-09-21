@@ -168,6 +168,12 @@ void ABlasterCharacter::PostInitializeComponents()
 	}
 }
 
+AWeapon *ABlasterCharacter::GetEquippedWeapon()
+{
+   if (CombatComp == nullptr) return nullptr;
+	return CombatComp->EquippedWeapon;
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -257,8 +263,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	if (AO_Pitch > 90.f && !IsLocallyControlled())
 	{
 		// map pitch from [270, 360) to [-90, 0)
+		// 这里因为网络传输的原因，数据被压缩了被换成了（0， 360），需要转换回来[-90, 0)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
+		/*
+			数据在序列化、压缩后通过网络传输发生变化，并解压到（0，360）范围内（因为unsigned格式），需要转换回来[-90, 0)
+		*/
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
 }
