@@ -67,7 +67,7 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	CombatComp->SetIsReplicated(true);	// 设置为复制组件
+	CombatComp->SetIsReplicated(true); // 设置为复制组件
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
@@ -155,7 +155,7 @@ bool ABlasterCharacter::IsWeaponEquipped()
 
 bool ABlasterCharacter::IsAiming()
 {
-    return (CombatComp && CombatComp->bAiming);
+	return (CombatComp && CombatComp->bAiming);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -174,7 +174,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
 	}
-	
+
 	// LastWeapon是发生复制复制之前的旧值
 	if (LastWeapon)
 	{
@@ -182,15 +182,17 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 	}
 }
 
-
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if(CombatComp){
-		if(HasAuthority()){
+	if (CombatComp)
+	{
+		if (HasAuthority())
+		{
 			// server
 			CombatComp->EquipWeapon(OverlappingWeapon);
 		}
-		else{
+		else
+		{
 			// client   --- 远程过程调用 是 可以在一台机器（client）上调用的函数，并在另一台机器（server）上执行 ---
 			// client按 E就会发送RPC请求到server，server会调用ServerEquipButtonPressed_Implementation函数
 			ServerEquipButtonPressed();
@@ -228,27 +230,37 @@ void ABlasterCharacter::AimButtonReleased()
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
-	if(CombatComp && CombatComp->EquippedWeapon==nullptr) return;
-	
+	if (CombatComp && CombatComp->EquippedWeapon == nullptr)
+		return;
+
 	FVector velocity = GetVelocity();
 	velocity.Z = 0;
 	float speed = velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
-	if(speed == 0 && !bIsInAir){ // 站着不动，不跳
-		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);	// 鼠标左右移动的值
+	if (speed == 0 && !bIsInAir)
+	{																				// 站着不动，不跳
+		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // 鼠标左右移动的值
 		FRotator deltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
 		AO_Yaw = deltaAimRotation.Yaw;
-		bUseControllerRotationYaw = false;	
+		bUseControllerRotationYaw = false;
 	}
 	if (speed > 0.f || bIsInAir) // running, or jumping
 	{
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		AO_Yaw = 0.f;	// 移动过程中 yaw保持0
+		AO_Yaw = 0.f; // 移动过程中 yaw保持0
 		bUseControllerRotationYaw = true;
 	}
 
-	AO_Pitch = GetBaseAimRotation().Pitch;	// 鼠标上下移动的值
+	AO_Pitch = GetBaseAimRotation().Pitch; // 鼠标上下移动的值
+	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch: %f"), AO_Pitch);
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		// map pitch from [270, 360) to [-90, 0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
