@@ -34,6 +34,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     EquippedWeapon = mBlasterCharacterPtr->GetEquippedWeapon();
     bIsCrouched = mBlasterCharacterPtr->bIsCrouched;
     bAiming = mBlasterCharacterPtr->IsAiming();
+    TurningInPlace = mBlasterCharacterPtr->GetTurningInPlace();
 
     // Offset Yaw for Strafing
     /*

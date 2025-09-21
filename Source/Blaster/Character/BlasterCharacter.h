@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "BlasterCharacter.generated.h"
 
 class USpringArmComponent;
@@ -131,7 +132,6 @@ protected:
 	void ServerEquipButtonPressed();
 
 protected:
-
 	/*
 		Replicated只在变量改变时才起作用，并不会复制每一帧或每次网络更新；一旦其值在server上更改立即复制到所有client;
 		ReplicatedUsing = OnRep_OverlappingWeapon表示当变量被replicated时会调用OnRep_OverlappingWeapon函数(代表通知)，
@@ -145,6 +145,9 @@ protected:
 public:
 	// point to the online session interface
 	IOnlineSessionPtr OnlineSessionInterface;
+
+private:
+	void TurnInPlace(float DeltaTime);
 
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
@@ -163,4 +166,6 @@ private:
 	float AO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation;
+
+	ETurningInPlace TurningInPlace;
 };
