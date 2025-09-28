@@ -17,6 +17,7 @@ struct FInputActionValue;
 class UWidgetComponent;
 class AWeapon;
 class UCombatComponent;
+class UAnimMontage;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -59,6 +60,9 @@ class ABlasterCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *AimAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *FireAction;
+
 public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
@@ -90,6 +94,8 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+
+	void PlayFireMontage(bool bAiming);
 
 protected:
 	/** Called for movement input */
@@ -133,6 +139,9 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	void FireButtonPressed();
+	void FireButtonReleased();
+
 protected:
 	/*
 		Replicated只在变量改变时才起作用，并不会复制每一帧或每次网络更新；一旦其值在server上更改立即复制到所有client;
@@ -171,4 +180,7 @@ private:
 	FRotator StartingAimRotation;
 
 	ETurningInPlace TurningInPlace;
+
+	UPROPERTY(EditAnywhere, Category = CombatComp)
+	TObjectPtr<UAnimMontage> FireWeaponMontage;
 };

@@ -20,6 +20,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterAnimInstance.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -176,8 +177,24 @@ void ABlasterCharacter::PostInitializeComponents()
 
 AWeapon *ABlasterCharacter::GetEquippedWeapon()
 {
-   if (CombatComp == nullptr) return nullptr;
+	if (CombatComp == nullptr)
+		return nullptr;
 	return CombatComp->EquippedWeapon;
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (CombatComp == nullptr || CombatComp->EquippedWeapon == nullptr)
+		return;
+
+	UAnimInstance *animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance && FireWeaponMontage)
+	{
+		animInstance->Montage_Play(FireWeaponMontage);
+		// 选择正确的section名字
+		FName sectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		animInstance->Montage_JumpToSection(sectionName, FireWeaponMontage);
+	}
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
@@ -294,6 +311,22 @@ void ABlasterCharacter::Jump()
 	else
 	{
 		Super::Jump();
+	}
+}
+
+void ABlasterCharacter::FireButtonPressed()
+{
+	if (CombatComp)
+	{
+		CombatComp->FireButtonPressed(true);
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if (CombatComp)
+	{
+		CombatComp->FireButtonPressed(false);
 	}
 }
 
@@ -529,6 +562,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FireButtonPressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 	}
 	else
 	{
