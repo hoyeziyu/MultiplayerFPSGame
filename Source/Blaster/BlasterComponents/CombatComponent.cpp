@@ -78,12 +78,13 @@ void UCombatComponent::MulticastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(HitTarget);
 	}
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 {
+	// 这里只会在local player的机器上运行跟踪，因为我们需要访问local player的viewport
 	FVector2D ViewportSize;	// ViewportSize是屏幕的分辨率
 	if (GEngine && GEngine->GameViewport)
 	{
@@ -115,9 +116,11 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 		{
 			// 没有击中任何东西，我们把线条的结束位置设置为我们想要的位置
 			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
 		}
 		else
 		{
+			HitTarget = TraceHitResult.ImpactPoint;
 			DrawDebugSphere(
 				GetWorld(),
 				TraceHitResult.ImpactPoint,
