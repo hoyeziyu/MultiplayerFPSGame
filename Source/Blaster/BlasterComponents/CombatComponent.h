@@ -9,6 +9,8 @@
 class AWeapon;
 class ABlasterCharacter;
 
+#define TRACE_LENGTH 80000.f
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTER_API UCombatComponent : public UActorComponent
 {
@@ -50,6 +52,8 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();	// multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 private:
 	TObjectPtr<ABlasterCharacter> Character;

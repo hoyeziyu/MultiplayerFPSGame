@@ -6,10 +6,12 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	BaseWalkSpeed = 600.f;
 	AimWalkSpeed = 450.f;
@@ -30,7 +32,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
 	if (Character)
-	{	// 举枪的时候移动速度不同
+	{ // 举枪的时候移动速度不同
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
@@ -53,11 +55,11 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
-	if(bFireButtonPressed){
+	if (bFireButtonPressed)
+	{
 		// 如果从server调用，它将在server上执行（只在server上执行）；如果从client调用，它将在server上执行（只在server上执行）
 		ServerFire();
 	}
@@ -69,8 +71,9 @@ void UCombatComponent::ServerFire_Implementation()
 }
 
 void UCombatComponent::MulticastFire_Implementation()
-{	// 这些重要设置丢到server上处理
-	if (EquippedWeapon == nullptr) return;
+{ // 这些重要设置丢到server上处理
+	if (EquippedWeapon == nullptr)
+		return;
 
 	if (Character)
 	{
@@ -79,9 +82,58 @@ void UCombatComponent::MulticastFire_Implementation()
 	}
 }
 
+void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
+{
+	FVector2D ViewportSize;	// ViewportSize是屏幕的分辨率
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // 屏幕中心,准星位置
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;	// 单位向量
+	// 把屏幕坐标转换为世界坐标和方向
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,	// 我们想要的位置
+		CrosshairWorldPosition,	// 世界位置
+		CrosshairWorldDirection);	// 世界方向
+
+	if (bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;	// 线条跟踪的开始位置
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility);
+		if (!TraceHitResult.bBlockingHit)
+		{
+			// 没有击中任何东西，我们把线条的结束位置设置为我们想要的位置
+			TraceHitResult.ImpactPoint = End;
+		}
+		else
+		{
+			DrawDebugSphere(
+				GetWorld(),
+				TraceHitResult.ImpactPoint,
+				12.f,
+				12,
+				FColor::Red);
+		}
+	}
+}
+
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	FHitResult HitResult;
+	TraceUnderCrosshairs(HitResult);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -107,7 +159,7 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
-	EquippedWeapon->SetOwner(Character);	// 设置武器的拥有者，应该为了方便销毁资源，SetOwner已经是可复制的
+	EquippedWeapon->SetOwner(Character); // 设置武器的拥有者，应该为了方便销毁资源，SetOwner已经是可复制的
 	/*
 		这里的有些变化，并不会同步到client上，处理办法：
 			a. RPC可以双向发送，可以创建从server调用并在client上执行的RPC
