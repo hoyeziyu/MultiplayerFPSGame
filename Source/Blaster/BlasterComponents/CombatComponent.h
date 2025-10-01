@@ -40,6 +40,17 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	/*
+		server RPC, 从client调用，server执行
+		Multicast RPC, server调用，所有client和server执行
+		每次调用rpc，都会有网络发送数据！！！
+	*/
+	UFUNCTION(Server, Reliable)
+	void ServerFire();	// server rpc
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire();	// multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
+
 private:
 	TObjectPtr<ABlasterCharacter> Character;
 

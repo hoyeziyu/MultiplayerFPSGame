@@ -314,6 +314,7 @@ void ABlasterCharacter::Jump()
 	}
 }
 
+// 此函数只在Player机器上本地调用；这里播放的蒙太奇动画的action是不复制的
 void ABlasterCharacter::FireButtonPressed()
 {
 	if (CombatComp)

@@ -53,12 +53,26 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
+	if(bFireButtonPressed){
+		// 如果从server调用，它将在server上执行（只在server上执行）；如果从client调用，它将在server上执行（只在server上执行）
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{	// 这些重要设置丢到server上处理
 	if (EquippedWeapon == nullptr) return;
 
-	if (Character && bFireButtonPressed)
+	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire();

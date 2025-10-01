@@ -71,7 +71,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USphereComponent> AreaSphere;
 	
-	// 声明为变量可复制
+	// 声明为变量可复制（复制的工作方式是变量只有在更改时才会被复制）
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
 
