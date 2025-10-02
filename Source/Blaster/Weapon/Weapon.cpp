@@ -12,6 +12,10 @@
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	/*
+		如果bReplicates是false，意味它将对所有机器拥有authority，独立的在所有机器上生成，独立于服务器存在，
+		所以不被复制的actor也将拥有authority,如果bReplicates是true,在server上生成，然后生成行为propagate到clients上，server维护authority
+	*/
 	bReplicates = true;
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));

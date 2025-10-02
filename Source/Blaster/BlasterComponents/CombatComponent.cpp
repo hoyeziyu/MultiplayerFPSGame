@@ -61,16 +61,19 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	if (bFireButtonPressed)
 	{
 		// 如果从server调用，它将在server上执行（只在server上执行）；如果从client调用，它将在server上执行（只在server上执行）
-		ServerFire();
+		// ServerFire();
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		ServerFire(HitResult.ImpactPoint);
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulticastFire();
+	MulticastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 { // 这些重要设置丢到server上处理
 	if (EquippedWeapon == nullptr)
 		return;
@@ -78,7 +81,7 @@ void UCombatComponent::MulticastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(HitTarget);
+		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
 
@@ -112,15 +115,17 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 			Start,
 			End,
 			ECollisionChannel::ECC_Visibility);
+		
+		// 如果追踪命中结果未被检测到，子弹将飞向世界原点。（这里保留不删）
 		if (!TraceHitResult.bBlockingHit)
 		{
 			// 没有击中任何东西，我们把线条的结束位置设置为我们想要的位置
 			TraceHitResult.ImpactPoint = End;
-			HitTarget = End;
+			// HitTarget = End;
 		}
 		else
 		{
-			HitTarget = TraceHitResult.ImpactPoint;
+			// HitTarget = TraceHitResult.ImpactPoint;
 			DrawDebugSphere(
 				GetWorld(),
 				TraceHitResult.ImpactPoint,
@@ -135,8 +140,9 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FHitResult HitResult;
-	TraceUnderCrosshairs(HitResult);
+	// 这里不需要每帧都追踪
+	// FHitResult HitResult;
+	// TraceUnderCrosshairs(HitResult);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

@@ -7,7 +7,10 @@
 
 void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
-	Super::Fire(HitTarget);
+	Super::Fire(HitTarget);	// 所有机器上需要完成的事情
+
+	if (!HasAuthority()) return;	// 希望子弹是Authority的，由server负责，确保只在server上生成子弹，然后复制到clients
+
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
 	if (MuzzleFlashSocket)

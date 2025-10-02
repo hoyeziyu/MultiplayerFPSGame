@@ -48,10 +48,10 @@ protected:
 		每次调用rpc，都会有网络发送数据！！！
 	*/
 	UFUNCTION(Server, Reliable)
-	void ServerFire();	// server rpc
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);	// server rpc
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastFire();	// multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
+	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);	// multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
@@ -72,5 +72,5 @@ private:
 		
 	bool bFireButtonPressed;
 
-	FVector HitTarget;
+	// FVector HitTarget;
 };
