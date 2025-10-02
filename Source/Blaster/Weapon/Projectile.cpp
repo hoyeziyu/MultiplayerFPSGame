@@ -6,12 +6,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;	// 确保Projectile在client生成，仍由server控制，复制它
+	bReplicates = true; // 确保Projectile在server生成，生成动作被复制到clients上，server维护Projectile位置的authority
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	SetRootComponent(CollisionBox);
@@ -33,15 +34,39 @@ void AProjectile::BeginPlay()
 	{
 		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
 			Tracer,
-			CollisionBox,	// 附加在什么场景组件上
-			FName(),		// 附加点的socket name(可以加在skeleton mesh component的bone上),不想附加就填空
+			CollisionBox, // 附加在什么场景组件上
+			FName(),	  // 附加点的socket name(可以加在skeleton mesh component的bone上),不想附加就填空
 			GetActorLocation(),
 			GetActorRotation(),
 			EAttachLocation::KeepWorldPosition);
 	}
+
+	if (HasAuthority())
+	{
+		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+	}
+}
+
+void AProjectile::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
+{
+	Destroy();
 }
 
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AProjectile::Destroyed()
+{
+	Super::Destroyed();
+
+	if (ImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	}
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+	}
 }
