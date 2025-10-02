@@ -49,7 +49,7 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
 {
-	Destroy();
+	Destroy();	// 这里destroy服务器端的actor,会传播到所有clients
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -57,10 +57,11 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+// 对复制的actor进行Destroyed，会传播到所有clients
 void AProjectile::Destroyed()
 {
 	Super::Destroyed();
-
+	// 放在这里，是为了client也有机会看到粒子特效
 	if (ImpactParticles)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
