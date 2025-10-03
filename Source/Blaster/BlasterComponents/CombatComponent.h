@@ -80,4 +80,8 @@ private:
 
 	TObjectPtr<ABlasterPlayerController> Controller;
 	TObjectPtr<ABlasterHUD> HUD;
+
+	// HUD and crosshairs
+	float CrosshairVelocityFactor;	// 速度影响
+	float CrosshairInAirFactor;		// 空中影响
 };
