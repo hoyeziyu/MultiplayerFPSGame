@@ -61,7 +61,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     AO_Pitch = mBlasterCharacterPtr->GetAO_Pitch();
 
     if (mbWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && mBlasterCharacterPtr->GetMesh())
-    {   //                                                                                                                        相对的世界空间
+    { //                                                                                                                        相对的世界空间
         LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
         FVector OutPosition;
         FRotator OutRotation;
@@ -69,5 +69,30 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
         mBlasterCharacterPtr->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
         LeftHandTransform.SetLocation(OutPosition);
         LeftHandTransform.SetRotation(FQuat(OutRotation));
+
+        FTransform MuzzleTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+        FVector MuzzleX(FRotationMatrix(MuzzleTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+        // 红色线说明枪口方向
+        DrawDebugLine( 
+            GetWorld(),
+            MuzzleTransform.GetLocation(),
+            MuzzleTransform.GetLocation() + MuzzleX * 1000.f,
+            FColor::Red);
+        
+        // 橙色线说明子弹要去哪里
+         DrawDebugLine( 
+            GetWorld(),
+            MuzzleTransform.GetLocation(),
+            mBlasterCharacterPtr->GetHitTarget(),
+            FColor::Orange);
+        
+        // 这里考虑性能优化（网络传输，没必要每帧都 复制 击中目标），只在本地玩家计算右手旋转
+        if (mBlasterCharacterPtr->IsLocallyControlled())
+        {
+            bLocallyControlled = true;
+            FTransform RightHandTransform = mBlasterCharacterPtr->GetMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
+            // 返回从起点RightHandTransform.GetLocation()到目标的旋转
+            RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - mBlasterCharacterPtr->GetHitTarget()));
+        }
     }
 }

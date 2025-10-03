@@ -197,6 +197,12 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+FVector ABlasterCharacter::GetHitTarget() const
+{
+    if (CombatComp == nullptr) return FVector();
+	return CombatComp->HitTarget;
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	if (OverlappingWeapon)

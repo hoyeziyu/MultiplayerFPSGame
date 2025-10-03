@@ -76,7 +76,7 @@ private:
 		
 	bool bFireButtonPressed;
 
-	// FVector HitTarget;
+	FVector HitTarget;
 
 	TObjectPtr<ABlasterPlayerController> Controller;
 	TObjectPtr<ABlasterHUD> HUD;
