@@ -10,6 +10,7 @@ class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
 class ACasing;
+class UTexture2D;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -36,9 +37,29 @@ public:
 
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent *GetAreaSphere() const { return AreaSphere; }
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE USkeletalMeshComponent *GetWeaponMesh() const { return WeaponMesh; }
 
-	virtual void Fire(const FVector& HitTarget);
+	virtual void Fire(const FVector &HitTarget);
+
+public:
+	/**
+	* Textures for the weapon crosshairs
+	*/
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	TObjectPtr<UTexture2D> CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	TObjectPtr<UTexture2D> CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	TObjectPtr<UTexture2D> CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	TObjectPtr<UTexture2D> CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	TObjectPtr<UTexture2D> CrosshairsBottom;
 
 protected:
 	virtual void BeginPlay() override;
@@ -71,7 +92,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USphereComponent> AreaSphere;
-	
+
 	// 声明为变量可复制（复制的工作方式是变量只有在更改时才会被复制）
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
@@ -83,5 +104,5 @@ private:
 	TObjectPtr<UAnimationAsset> FireAnimation;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ACasing> CasingClass;	// 子弹壳
+	TSubclassOf<ACasing> CasingClass; // 子弹壳
 };

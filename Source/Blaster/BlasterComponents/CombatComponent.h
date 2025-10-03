@@ -8,6 +8,8 @@
 
 class AWeapon;
 class ABlasterCharacter;
+class ABlasterPlayerController;
+class ABlasterHUD;
 
 #define TRACE_LENGTH 80000.f
 
@@ -55,6 +57,8 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
 private:
 	TObjectPtr<ABlasterCharacter> Character;
 
@@ -73,4 +77,7 @@ private:
 	bool bFireButtonPressed;
 
 	// FVector HitTarget;
+
+	TObjectPtr<ABlasterPlayerController> Controller;
+	TObjectPtr<ABlasterHUD> HUD;
 };

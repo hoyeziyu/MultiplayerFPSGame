@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/HUD/BlasterHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -68,12 +70,12 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize &TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize &TraceHitTarget)
 { // 这些重要设置丢到server上处理
 	if (EquippedWeapon == nullptr)
 		return;
@@ -88,7 +90,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 {
 	// 这里只会在local player的机器上运行跟踪，因为我们需要访问local player的viewport
-	FVector2D ViewportSize;	// ViewportSize是屏幕的分辨率
+	FVector2D ViewportSize; // ViewportSize是屏幕的分辨率
 	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
@@ -96,17 +98,17 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // 屏幕中心,准星位置
 	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;	// 单位向量
+	FVector CrosshairWorldDirection; // 单位向量
 	// 把屏幕坐标转换为世界坐标和方向
 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
 		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,	// 我们想要的位置
-		CrosshairWorldPosition,	// 世界位置
-		CrosshairWorldDirection);	// 世界方向
+		CrosshairLocation,		  // 我们想要的位置
+		CrosshairWorldPosition,	  // 世界位置
+		CrosshairWorldDirection); // 世界方向
 
 	if (bScreenToWorld)
 	{
-		FVector Start = CrosshairWorldPosition;	// 线条跟踪的开始位置
+		FVector Start = CrosshairWorldPosition; // 线条跟踪的开始位置
 
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
@@ -115,7 +117,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 			Start,
 			End,
 			ECollisionChannel::ECC_Visibility);
-		
+
 		// 如果追踪命中结果未被检测到，子弹将飞向世界原点。（这里保留不删）
 		if (!TraceHitResult.bBlockingHit)
 		{
@@ -136,6 +138,39 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 	}
 }
 
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (Character == nullptr || Character->Controller == nullptr)
+		return;
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller.Get();
+	if (Controller)
+	{
+		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD.Get();
+		if (HUD)
+		{
+			FHUDPackage HUDPackage;
+			if (EquippedWeapon)
+			{
+				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+			}
+			else
+			{
+				HUDPackage.CrosshairsCenter = nullptr;
+				HUDPackage.CrosshairsLeft = nullptr;
+				HUDPackage.CrosshairsRight = nullptr;
+				HUDPackage.CrosshairsBottom = nullptr;
+				HUDPackage.CrosshairsTop = nullptr;
+			}
+			HUD->SetHUDPackage(HUDPackage);
+		}
+	}
+}
+
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -143,6 +178,8 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// 这里不需要每帧都追踪
 	// FHitResult HitResult;
 	// TraceUnderCrosshairs(HitResult);
+
+	SetHUDCrosshairs(DeltaTime);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
