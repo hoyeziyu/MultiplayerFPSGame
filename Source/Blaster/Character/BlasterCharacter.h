@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
+#include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
 class USpringArmComponent;
@@ -22,7 +23,7 @@ class UAnimMontage;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config = Game)
-class ABlasterCharacter : public ACharacter
+class ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 

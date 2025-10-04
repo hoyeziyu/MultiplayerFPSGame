@@ -75,6 +75,7 @@ ABlasterCharacter::ABlasterCharacter()
 	// 处理太空舱组件 和 mesh组件 与相机碰撞的问题
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	// 方向旋转（orient rotation）到运动设置的旋转速率（rotation rate）
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 

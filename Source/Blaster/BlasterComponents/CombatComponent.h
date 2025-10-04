@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 class AWeapon;
@@ -81,12 +82,16 @@ private:
 
 	FVector HitTarget;
 
+	FHUDPackage HUDPackage;
+
 	TObjectPtr<ABlasterPlayerController> Controller;
 	TObjectPtr<ABlasterHUD> HUD;
 
 	// HUD and crosshairs
 	float CrosshairVelocityFactor; // 速度影响
 	float CrosshairInAirFactor;	   // 空中影响
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
 
 	/**
 	 * Aiming and FOV

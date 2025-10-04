@@ -92,7 +92,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
             bLocallyControlled = true;
             FTransform RightHandTransform = mBlasterCharacterPtr->GetMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
             // 返回从起点RightHandTransform.GetLocation()到目标的旋转
-            RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - mBlasterCharacterPtr->GetHitTarget()));
+            FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - mBlasterCharacterPtr->GetHitTarget()));
+			// 这里解决，当十字准心在命中目标角色后面移动到前面时，会出现跳跃现象，平滑过渡解决这个问题
+            RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 30.f);
+        
         }
     }
 }
