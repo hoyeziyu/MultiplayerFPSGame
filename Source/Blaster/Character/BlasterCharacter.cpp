@@ -105,6 +105,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 void ABlasterCharacter::OpenLobby()
@@ -200,7 +201,8 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 
 FVector ABlasterCharacter::GetHitTarget() const
 {
-    if (CombatComp == nullptr) return FVector();
+	if (CombatComp == nullptr)
+		return FVector();
 	return CombatComp->HitTarget;
 }
 
@@ -358,6 +360,29 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
+}
+
+// 为解决：靠墙后退，character阻挡在前什么都看不见（镜头太近时，隐藏character）
+void ABlasterCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled())
+		return;
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (CombatComp && CombatComp->EquippedWeapon && CombatComp->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatComp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (CombatComp && CombatComp->EquippedWeapon && CombatComp->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatComp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
 }

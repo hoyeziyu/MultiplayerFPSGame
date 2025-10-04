@@ -163,6 +163,8 @@ public:
 private:
 	void TurnInPlace(float DeltaTime);
 
+	void HideCameraIfCharacterClose();
+
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
@@ -186,4 +188,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	TObjectPtr<UAnimMontage> FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 };

@@ -122,6 +122,14 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult &TraceHitResult)
 	{
 		FVector Start = CrosshairWorldPosition; // 线条跟踪的开始位置
 
+		if (Character)
+		{
+			// camera的中心向外追踪， 我们需要把起点移动到角色前面，这样 永远不会追踪和命中character背后的actor或者自己
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size(); // 计算从摄像机到角色的距离
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+			DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Blue, false);
+		}
+
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
 		GetWorld()->LineTraceSingleByChannel(
