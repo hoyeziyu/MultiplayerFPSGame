@@ -13,19 +13,19 @@ class ABlasterHUD;
 
 #define TRACE_LENGTH 80000.f
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UCombatComponent();
 	friend class ABlasterCharacter;
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(AWeapon *WeaponToEquip);
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,14 +50,17 @@ protected:
 		每次调用rpc，都会有网络发送数据！！！
 	*/
 	UFUNCTION(Server, Reliable)
-	void ServerFire(const FVector_NetQuantize& TraceHitTarget);	// server rpc
+	void ServerFire(const FVector_NetQuantize &TraceHitTarget); // server rpc
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);	// multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
+	void MulticastFire(const FVector_NetQuantize &TraceHitTarget); // multicast rpc,这里不用复制（因为复制的工作方式是变量只有在更改时才会被复制）
 
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	void TraceUnderCrosshairs(FHitResult &TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
+
+private:
+	void InterpFOV(float DeltaTime);
 
 private:
 	TObjectPtr<ABlasterCharacter> Character;
@@ -73,7 +76,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
-		
+
 	bool bFireButtonPressed;
 
 	FVector HitTarget;
@@ -82,6 +85,21 @@ private:
 	TObjectPtr<ABlasterHUD> HUD;
 
 	// HUD and crosshairs
-	float CrosshairVelocityFactor;	// 速度影响
-	float CrosshairInAirFactor;		// 空中影响
+	float CrosshairVelocityFactor; // 速度影响
+	float CrosshairInAirFactor;	   // 空中影响
+
+	/**
+	 * Aiming and FOV
+	 */
+
+	// Field of view when not aiming; set to the camera's base FOV in BeginPlay
+	float DefaultFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 30.f;
+
+	float CurrentFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.f;
 };

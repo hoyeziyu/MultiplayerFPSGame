@@ -41,10 +41,13 @@ public:
 
 	virtual void Fire(const FVector &HitTarget);
 
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+
 public:
 	/**
-	* Textures for the weapon crosshairs
-	*/
+	 * Textures for the weapon crosshairs
+	 */
 
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	TObjectPtr<UTexture2D> CrosshairsCenter;
@@ -60,6 +63,16 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	TObjectPtr<UTexture2D> CrosshairsBottom;
+
+	/**
+	 * Zoomed FOV while aiming
+	 */
+
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 30.f;
+
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 20.f;
 
 protected:
 	virtual void BeginPlay() override;
