@@ -21,6 +21,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
+#include "Blaster/Blaster.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -71,7 +72,7 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatComp->SetIsReplicated(true); // 设置为复制组件
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	// 处理太空舱组件 和 mesh组件 与相机碰撞的问题
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -197,6 +198,11 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		FName sectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		animInstance->Montage_JumpToSection(sectionName, FireWeaponMontage);
 	}
+}
+
+void ABlasterCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMontage();
 }
 
 FVector ABlasterCharacter::GetHitTarget() const
@@ -337,6 +343,20 @@ void ABlasterCharacter::FireButtonReleased()
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(false);
+	}
+}
+
+void ABlasterCharacter::PlayHitReactMontage()
+{
+	if (CombatComp == nullptr || CombatComp->EquippedWeapon == nullptr)
+		return;
+
+	UAnimInstance *AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 

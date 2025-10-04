@@ -7,6 +7,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/Blaster.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -21,6 +23,9 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	// 这里不用ECollisionChannel::ECC_Pawn的原因是：如果用Pawn通道，打到的是UCapsuleComponent, 而不是Character Mesh，
+	// 我们在mesh上追踪，实际上也是追踪物理asset
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true; // 确保子弹的旋转角度与自身速度方向保持一致
@@ -49,7 +54,13 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
 {
-	Destroy();	// 这里destroy服务器端的actor,会传播到所有clients
+	ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter)
+	{
+		BlasterCharacter->MulticastHit();
+	}
+
+	Destroy(); // 这里destroy服务器端的actor,会传播到所有clients
 }
 
 void AProjectile::Tick(float DeltaTime)

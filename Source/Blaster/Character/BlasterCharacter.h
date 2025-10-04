@@ -98,6 +98,9 @@ public:
 
 	void PlayFireMontage(bool bAiming);
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
+
 	FVector GetHitTarget() const;
 
 protected:
@@ -144,6 +147,7 @@ protected:
 
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void PlayHitReactMontage();
 
 protected:
 	/*
@@ -188,6 +192,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	TObjectPtr<UAnimMontage> FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = CombatComp)
+	TObjectPtr<UAnimMontage> HitReactMontage;
 
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
