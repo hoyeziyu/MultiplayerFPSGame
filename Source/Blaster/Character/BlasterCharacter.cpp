@@ -105,7 +105,23 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	AimOffset(DeltaTime);
+	// 枚举实际上就是带有名称的整数。
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		// 只有对真正控制的character才执行这个
+		AimOffset(DeltaTime);
+	}
+	else
+	{	// 模拟代理 ROLE_SimulatedProxy
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			// 当一定时间没有复制运动，则直接调用
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+
 	HideCameraIfCharacterClose();
 }
 
@@ -205,6 +221,19 @@ void ABlasterCharacter::MulticastHit_Implementation()
 	PlayHitReactMontage();
 }
 
+// 代表复制运动的地方 在actor.h中ReplicatedMovement变量
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	/*
+		这里调用的原因是：模拟代理仍然有它们的tick函数运行在character上，只是偶尔得到网络更新，网络更新不像tick那样每帧都调用，
+		就会出现ProxyYaw值为0的情况，所以我们每帧计算的delta不能再模拟代理上使用；
+		所以只有当模拟代理更新了它的运动，才进行调用
+	*/
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+}
+
 FVector ABlasterCharacter::GetHitTarget() const
 {
 	if (CombatComp == nullptr)
@@ -277,13 +306,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	if (CombatComp && CombatComp->EquippedWeapon == nullptr)
 		return;
 
-	FVector velocity = GetVelocity();
-	velocity.Z = 0;
-	float speed = velocity.Size();
+	float speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
-	if (speed == 0 && !bIsInAir)
-	{																				// 站着不动，不跳
+	if (speed == 0 && !bIsInAir) // 站着不动，不跳
+	{
+		bRotateRootBone = true;
 		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // 鼠标左右移动的值
 		FRotator deltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
 		AO_Yaw = deltaAimRotation.Yaw;
@@ -296,25 +324,14 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	}
 	if (speed > 0.f || bIsInAir) // running, or jumping
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f; // 移动过程中 yaw保持0
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
-	AO_Pitch = GetBaseAimRotation().Pitch; // 鼠标上下移动的值
-	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch: %f"), AO_Pitch);
-	if (AO_Pitch > 90.f && !IsLocallyControlled())
-	{
-		// map pitch from [270, 360) to [-90, 0)
-		// 这里因为网络传输的原因，数据被压缩了被换成了（0， 360），需要转换回来[-90, 0)
-		FVector2D InRange(270.f, 360.f);
-		FVector2D OutRange(-90.f, 0.f);
-		/*
-			数据在序列化、压缩后通过网络传输发生变化，并解压到（0，360）范围内（因为unsigned格式），需要转换回来[-90, 0)
-		*/
-		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
-	}
+	CalculateAO_Pitch();
 }
 
 void ABlasterCharacter::Jump()
@@ -358,6 +375,66 @@ void ABlasterCharacter::PlayHitReactMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ABlasterCharacter::CalculateAO_Pitch()
+{
+	AO_Pitch = GetBaseAimRotation().Pitch; // 鼠标上下移动的值
+	UE_LOG(LogTemp, Warning, TEXT("AO_Pitch: %f"), AO_Pitch);
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		// map pitch from [270, 360) to [-90, 0)
+		// 这里因为网络传输的原因，数据被压缩了被换成了（0， 360），需要转换回来[-90, 0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		/*
+			数据在序列化、压缩后通过网络传输发生变化，并解压到（0，360）范围内（因为unsigned格式），需要转换回来[-90, 0)
+		*/
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+
+/*
+	我们在模拟代理上产生抖动的原因是：动画蓝图并没有更新每一帧，跟随character网络更新而更新，比tick要慢;
+	这里对模拟代理执行替代解决方案
+*/
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (CombatComp == nullptr || CombatComp->EquippedWeapon == nullptr)
+		return;
+	bRotateRootBone = false;	// server和本地控制的client可以设置为true
+	float Speed = CalculateSpeed();
+	if (Speed > 0.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+
+	// 计算与上一帧的旋转差值
+	ProxyRotationLastFrame = ProxyRotation;
+	ProxyRotation = GetActorRotation();
+	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+
+	UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
+
+	if (FMath::Abs(ProxyYaw) > TurnThreshold)
+	{
+		if (ProxyYaw > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYaw < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+		else
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		}
+		return;
+	}
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
@@ -405,6 +482,13 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 			CombatComp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
+}
+
+float ABlasterCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	return Velocity.Size();
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()

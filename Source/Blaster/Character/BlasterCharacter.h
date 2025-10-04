@@ -101,7 +101,11 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastHit();
 
+	virtual void OnRep_ReplicatedMovement() override;
+
 	FVector GetHitTarget() const;
+
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
 protected:
 	/** Called for movement input */
@@ -149,6 +153,9 @@ protected:
 	void FireButtonReleased();
 	void PlayHitReactMontage();
 
+	void CalculateAO_Pitch();
+	void SimProxiesTurn();
+
 protected:
 	/*
 		Replicated只在变量改变时才起作用，并不会复制每一帧或每次网络更新；一旦其值在server上更改立即复制到所有client;
@@ -168,6 +175,7 @@ private:
 	void TurnInPlace(float DeltaTime);
 
 	void HideCameraIfCharacterClose();
+	float CalculateSpeed();
 
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
@@ -198,4 +206,11 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
+
+	bool bRotateRootBone;
+	float TurnThreshold = 0.5f;	//需要转弯的阀值
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplication;
 };
