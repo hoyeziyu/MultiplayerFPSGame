@@ -60,8 +60,14 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
+	void Fire();
+
 private:
 	void InterpFOV(float DeltaTime);
+
+	// Automatic fire
+	void StartFireTimer();
+	void FireTimerFinished();
 
 private:
 	TObjectPtr<ABlasterCharacter> Character;
@@ -107,4 +113,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	float ZoomInterpSpeed = 20.f;
+
+	// Automatic fire
+	FTimerHandle FireTimer;
+	bool bCanFire = true;
 };
