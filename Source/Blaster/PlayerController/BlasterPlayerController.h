@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
+class ABlasterHUD;
+
 /**
 	作用: 1.管理，访问HUD（ GetHUD()返回正在使用的当前HUD ）
  */
@@ -13,5 +15,13 @@ UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	void SetHUDHealth(float Health, float MaxHealth);
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	TObjectPtr<ABlasterHUD> BlasterHUD;
 };

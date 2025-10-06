@@ -1,6 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BlasterHUD.h"
+#include "GameFramework/PlayerController.h"
+#include "CharacterOverlay.h"
+
+void ABlasterHUD::BeginPlay()
+{
+    Super::BeginPlay();
+
+    AddCharacterOverlay();
+}
+
+void ABlasterHUD::AddCharacterOverlay()
+{
+    APlayerController *PlayerController = GetOwningPlayerController();
+    if (PlayerController && CharacterOverlayClass)
+    {
+        CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+        CharacterOverlay->AddToViewport();
+    }
+}
 
 void ABlasterHUD::DrawHUD()
 {
@@ -48,8 +67,7 @@ void ABlasterHUD::DrawCrosshair(UTexture2D *Texture, FVector2D ViewportCenter, F
     const float TextureHeight = Texture->GetSizeY();
     const FVector2D TextureDrawPoint(
         ViewportCenter.X - (TextureWidth / 2.f) + Spread.X,
-		ViewportCenter.Y - (TextureHeight / 2.f) + Spread.Y
-    );
+        ViewportCenter.Y - (TextureHeight / 2.f) + Spread.Y);
 
     DrawTexture(
         Texture,

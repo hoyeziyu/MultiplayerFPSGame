@@ -22,6 +22,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -155,6 +156,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 
 	// 注册OverlappingWeapon变量用来replicated，只有满足COND_OwnerOnly条件的client才能接收到这个变量
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 // SetOverlappingWeapon这里只在server中被调用，解决OnRep_OverlappingWeapon不会被server调用的问题
@@ -491,6 +493,10 @@ float ABlasterCharacter::CalculateSpeed()
 	return Velocity.Size();
 }
 
+void ABlasterCharacter::OnRep_Health()
+{
+}
+
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
 	/*
@@ -514,6 +520,12 @@ void ABlasterCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+	}
+
+	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
 }
 

@@ -19,6 +19,7 @@ class UWidgetComponent;
 class AWeapon;
 class UCombatComponent;
 class UAnimMontage;
+class ABlasterPlayerController;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -177,6 +178,13 @@ private:
 	void HideCameraIfCharacterClose();
 	float CalculateSpeed();
 
+	/*
+		1.当Health变量被replicated时会调用OnRep_Health函数(代表通知)，
+		2.将变量标记为复制时，需要注册变量（GetLifetimeReplicatedProps函数中）进行复制
+	*/
+	UFUNCTION()
+	void OnRep_Health();
+
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
@@ -213,4 +221,16 @@ private:
 	FRotator ProxyRotation;
 	float ProxyYaw;
 	float TimeSinceLastMovementReplication;
+
+	/**
+	* Player health
+	  放在character类中，而不放在Player State类中，因为Player State比character网络更新更慢，character有更快的复制速率
+	*/
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 100.f;
+
+	TObjectPtr<ABlasterPlayerController> BlasterPlayerController;
 };

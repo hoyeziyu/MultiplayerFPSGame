@@ -7,6 +7,8 @@
 #include "BlasterHUD.generated.h"
 
 class UTexture2D;
+class UCharacterOverlay;
+class UUserWidget;
 
 USTRUCT(BlueprintType)
 struct FHUDPackage
@@ -31,8 +33,17 @@ public:
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage &Package) { HUDPackage = Package; }
 
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<UUserWidget> CharacterOverlayClass;
+
+	TObjectPtr<UCharacterOverlay> CharacterOverlay;
+
+protected:
+	virtual void BeginPlay() override;
+	void AddCharacterOverlay();
+
 private:
-	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
+	void DrawCrosshair(UTexture2D *Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 private:
 	FHUDPackage HUDPackage;
