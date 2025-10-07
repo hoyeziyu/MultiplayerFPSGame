@@ -108,6 +108,8 @@ public:
 
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
+	void Elim();
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue &Value);
