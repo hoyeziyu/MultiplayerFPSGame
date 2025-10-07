@@ -68,8 +68,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
-	UE_LOG(LogTemp, Warning, TEXT("Fire11111111Pressed: %s"), bFireButtonPressed ? TEXT("True") : TEXT("False"));
-	if (bFireButtonPressed)
+	if (bFireButtonPressed && EquippedWeapon)
 	{
 		Fire();
 	}
@@ -77,7 +76,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 void UCombatComponent::Fire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire11111111PbCanFired: %s"), bCanFire ? TEXT("True") : TEXT("False"));
 	if (bCanFire)
 	{
 		bCanFire = false;
@@ -100,7 +98,6 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize &T
 { // 这些重要设置丢到server上处理
 	if (EquippedWeapon == nullptr)
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("Fire11111111Pressedement: %s"), bFireButtonPressed ? TEXT("True") : TEXT("False"));
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
