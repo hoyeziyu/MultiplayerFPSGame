@@ -113,7 +113,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		AimOffset(DeltaTime);
 	}
 	else
-	{	// 模拟代理 ROLE_SimulatedProxy
+	{ // 模拟代理 ROLE_SimulatedProxy
 		TimeSinceLastMovementReplication += DeltaTime;
 		if (TimeSinceLastMovementReplication > 0.25f)
 		{
@@ -218,10 +218,10 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
+// void ABlasterCharacter::MulticastHit_Implementation()
+// {
+// 	PlayHitReactMontage();
+// }
 
 // 代表复制运动的地方 在actor.h中ReplicatedMovement变量
 void ABlasterCharacter::OnRep_ReplicatedMovement()
@@ -396,7 +396,6 @@ void ABlasterCharacter::CalculateAO_Pitch()
 	}
 }
 
-
 /*
 	我们在模拟代理上产生抖动的原因是：动画蓝图并没有更新每一帧，跟随character网络更新而更新，比tick要慢;
 	这里对模拟代理执行替代解决方案
@@ -405,7 +404,7 @@ void ABlasterCharacter::SimProxiesTurn()
 {
 	if (CombatComp == nullptr || CombatComp->EquippedWeapon == nullptr)
 		return;
-	bRotateRootBone = false;	// server和本地控制的client可以设置为true
+	bRotateRootBone = false; // server和本地控制的client可以设置为true
 	float Speed = CalculateSpeed();
 	if (Speed > 0.f)
 	{
@@ -437,6 +436,22 @@ void ABlasterCharacter::SimProxiesTurn()
 		return;
 	}
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+}
+
+void ABlasterCharacter::ReceiveDamage(AActor *DamagedActor, float Damage, const UDamageType *DamageType, AController *InstigatorController, AActor *DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController.Get();
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
@@ -495,6 +510,8 @@ float ABlasterCharacter::CalculateSpeed()
 
 void ABlasterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
@@ -522,10 +539,10 @@ void ABlasterCharacter::BeginPlay()
 		}
 	}
 
-	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	if (BlasterPlayerController)
+	UpdateHUDHealth();
+	if (HasAuthority())
 	{
-		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
 

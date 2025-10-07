@@ -99,8 +99,8 @@ public:
 
 	void PlayFireMontage(bool bAiming);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastHit();
+	// UFUNCTION(NetMulticast, Unreliable)
+	// void MulticastHit();
 
 	virtual void OnRep_ReplicatedMovement() override;
 
@@ -156,6 +156,10 @@ protected:
 
 	void CalculateAO_Pitch();
 	void SimProxiesTurn();
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
 
 protected:
 	/*
