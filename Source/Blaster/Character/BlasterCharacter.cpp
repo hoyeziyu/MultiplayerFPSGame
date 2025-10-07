@@ -219,6 +219,15 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::PlayElimMontage()
+{
+	UAnimInstance *AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
 // void ABlasterCharacter::MulticastHit_Implementation()
 // {
 // 	PlayHitReactMontage();
@@ -244,8 +253,10 @@ FVector ABlasterCharacter::GetHitTarget() const
 	return CombatComp->HitTarget;
 }
 
-void ABlasterCharacter::Elim()
+void ABlasterCharacter::Elim_Implementation()
 {
+	bElimmed = true;
+	PlayElimMontage();
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
@@ -457,7 +468,6 @@ void ABlasterCharacter::ReceiveDamage(AActor *DamagedActor, float Damage, const 
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController.Get();
 			ABlasterPlayerController *AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
-
 		}
 	}
 }

@@ -98,6 +98,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 
 	void PlayFireMontage(bool bAiming);
+	void PlayElimMontage();
 
 	// UFUNCTION(NetMulticast, Unreliable)
 	// void MulticastHit();
@@ -108,7 +109,9 @@ public:
 
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
 protected:
 	/** Called for movement input */
@@ -218,6 +221,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	TObjectPtr<UAnimMontage> HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = CombatComp)
+	TObjectPtr<UAnimMontage> ElimMontage;
+
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
 
@@ -239,4 +245,6 @@ private:
 	float Health = 100.f;
 
 	TObjectPtr<ABlasterPlayerController> BlasterPlayerController;
+
+	bool bElimmed = false;
 };
