@@ -16,4 +16,5 @@ class BLASTER_API ABlasterGameMode : public AGameMode
 public:
 	// 处理玩家被淘汰的逻辑
 	virtual void PlayerEliminated(ABlasterCharacter *ElimmedCharacter, ABlasterPlayerController *VictimController, ABlasterPlayerController *AttackerController);
+	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 };

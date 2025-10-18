@@ -109,8 +109,12 @@ public:
 
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
-	UFUNCTION(NetMulticast, Reliable)
+	// 只用于server上调用
 	void Elim();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
+
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
 protected:
@@ -194,6 +198,8 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	void ElimTimerFinished();
+
 private:
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
@@ -247,4 +253,9 @@ private:
 	TObjectPtr<ABlasterPlayerController> BlasterPlayerController;
 
 	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
 };
