@@ -21,6 +21,7 @@ class AWeapon;
 class UCombatComponent;
 class UAnimMontage;
 class ABlasterPlayerController;
+class USoundCue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -117,6 +118,8 @@ public:
 	void MulticastElim();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+
+	virtual void Destroyed() override;
 
 protected:
 	/** Called for movement input */
@@ -281,4 +284,16 @@ private:
 	// Material instance set on the Blueprint, used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Elim)
 	TObjectPtr<UMaterialInstance> DissolveMaterialInstance;
+
+	/**
+	* Elim bot
+	*/
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UParticleSystem> ElimBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UParticleSystemComponent> ElimBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> ElimBotSound;
 };
