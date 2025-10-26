@@ -289,8 +289,8 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	StartDissolve();
 
 	// Disable character movement
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();	// 禁止我们wasd移动
+	GetCharacterMovement()->StopMovementImmediately(); // 阻止旋转角色
 	if (BlasterPlayerController)
 	{
 		DisableInput(BlasterPlayerController);

@@ -119,6 +119,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// 尝试拿起一件已经有物理功能的武器钱，确保它的物理功能被关闭
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -128,6 +129,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		{
 			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
+		// 启用物理和碰撞
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
