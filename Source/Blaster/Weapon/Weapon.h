@@ -44,6 +44,8 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
+	void Dropped();
+
 public:
 	/**
 	 * Textures for the weapon crosshairs
