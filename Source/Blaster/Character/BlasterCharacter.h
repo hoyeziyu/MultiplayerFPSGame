@@ -71,6 +71,8 @@ public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void Destroyed() override;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -118,8 +120,8 @@ public:
 	void MulticastElim();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
-
-	virtual void Destroyed() override;
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
 protected:
 	/** Called for movement input */

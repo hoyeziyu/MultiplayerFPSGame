@@ -18,6 +18,10 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+	/*
+		一旦控制器拥有一个pawn，就可以在这个函数访问Pawn
+	*/
+	virtual void OnPossess(APawn* InPawn) override;
 
 protected:
 	virtual void BeginPlay() override;
