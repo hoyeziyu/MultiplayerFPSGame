@@ -22,6 +22,7 @@ class UCombatComponent;
 class UAnimMontage;
 class ABlasterPlayerController;
 class USoundCue;
+class ABlasterPlayerState;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -133,7 +134,7 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
-	// To add mapping context
+	// To add mapping context。从BeginPlay进入player state，player state的第一帧是无效的，行不通
 	virtual void BeginPlay();
 
 	UFUNCTION(BlueprintCallable)
@@ -175,6 +176,8 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+	// Poll for any relelvant classes and initialize our HUD （player state在第一帧无效，所以需要PollInit函数，可以找到player state的地方）
+	void PollInit();
 
 protected:
 	/*
@@ -298,4 +301,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundCue> ElimBotSound;
+
+	TObjectPtr<ABlasterPlayerState> BlasterPlayerState;
 };

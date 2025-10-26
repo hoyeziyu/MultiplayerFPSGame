@@ -18,6 +18,8 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDScore(float Score);
+	void SetHUDDefeats(int32 Defeats);
 	/*
 		一旦控制器拥有一个pawn，就可以在这个函数访问Pawn
 	*/

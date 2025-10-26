@@ -28,6 +28,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -133,6 +134,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	}
 
 	HideCameraIfCharacterClose();
+	PollInit();	// 这里目前放在这里，没放在BeginPlay中，因为
 }
 
 void ABlasterCharacter::OpenLobby()
@@ -310,16 +312,14 @@ void ABlasterCharacter::MulticastElim_Implementation()
 			GetWorld(),
 			ElimBotEffect,
 			ElimBotSpawnPoint,
-			GetActorRotation()
-		);
+			GetActorRotation());
 	}
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(
 			this,
 			ElimBotSound,
-			GetActorLocation()
-		);
+			GetActorLocation());
 	}
 }
 
@@ -573,6 +573,19 @@ void ABlasterCharacter::UpdateHUDHealth()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if (BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
+		}
 	}
 }
 
