@@ -50,6 +50,7 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 	void Dropped();
+	bool IsEmpty();
 
 public:
 	/**

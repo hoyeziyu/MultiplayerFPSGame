@@ -69,6 +69,8 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	bool CanFire();
+
 private:
 	TObjectPtr<ABlasterCharacter> Character;
 

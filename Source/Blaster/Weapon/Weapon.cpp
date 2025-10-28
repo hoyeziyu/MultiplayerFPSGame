@@ -76,6 +76,11 @@ void AWeapon::Dropped()
 	BlasterOwnerController = nullptr;
 }
 
+bool AWeapon::IsEmpty()
+{
+    return Ammo <= 0;
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -123,7 +128,7 @@ void AWeapon::SetHUDAmmo()
 
 void AWeapon::SpendRound()
 {
-	--Ammo;
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 	SetHUDAmmo();
 }
 
