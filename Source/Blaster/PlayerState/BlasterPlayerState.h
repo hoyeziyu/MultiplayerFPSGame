@@ -31,6 +31,9 @@ public:
 	void AddToDefeats(int32 DefeatsAmount);
 
 private:
+	/*
+		为防止指针存在未定义行为，可以使用UPROPERTY，或者初始化为nullptr
+	*/
 	TObjectPtr<ABlasterCharacter> Character;
 	TObjectPtr<ABlasterPlayerController> Controller;
 
