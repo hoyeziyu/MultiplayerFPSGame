@@ -322,6 +322,12 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr)
 		return;
+
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
+
 	/*
 		首先我们需要把武器附加到角色上，意味我们角色骨架上需要有一个插槽(socket)连接武器
 	*/
@@ -334,13 +340,13 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character); // 设置武器的拥有者，应该为了方便销毁资源，SetOwner已经是可复制的
+	EquippedWeapon->SetHUDAmmo();
 	/*
 		这里的有些变化，并不会同步到client上，处理办法：
 			a. RPC可以双向发送，可以创建从server调用并在client上执行的RPC
 			b. 变量复制
 	// EquippedWeapon->ShowPickupWidget(false);	不放这里了
 	*/
-
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }

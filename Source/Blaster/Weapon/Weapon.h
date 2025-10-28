@@ -11,6 +11,8 @@ class UWidgetComponent;
 class UAnimationAsset;
 class ACasing;
 class UTexture2D;
+class ABlasterCharacter;
+class ABlasterPlayerController;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -32,6 +34,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
+	// 这里只有确定好owner之后才能设置HUD的弹药数量
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
 
 	void ShowPickupWidget(bool bShowWidget);
 
@@ -110,6 +115,11 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
@@ -129,4 +139,16 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass; // 子弹壳
+	
+	// 弹药放在weapon里更合理，玩家捡起武器时，弹药也会跟随剩下的数量
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UPROPERTY()
+	TObjectPtr<ABlasterCharacter> BlasterOwnerCharacter;
+	UPROPERTY()
+	TObjectPtr<ABlasterPlayerController> BlasterOwnerController;
 };
