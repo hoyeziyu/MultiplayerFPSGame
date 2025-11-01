@@ -21,6 +21,7 @@ public:
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
+	void SetHUDCarriedAmmo(int32 Ammo);
 	/*
 		一旦控制器拥有一个pawn，就可以在这个函数访问Pawn
 	*/

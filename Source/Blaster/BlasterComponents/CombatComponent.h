@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 class AWeapon;
@@ -71,6 +72,9 @@ private:
 
 	bool CanFire();
 
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
 private:
 	TObjectPtr<ABlasterCharacter> Character;
 
@@ -119,4 +123,13 @@ private:
 	// Automatic fire
 	FTimerHandle FireTimer;
 	bool bCanFire = true;
+
+	// Carried ammo for the currently-equipped weapon
+	/*
+		CarriedAmmo
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+
+	TMap<EWeaponType, int32> CarriedAmmoMap;
 };

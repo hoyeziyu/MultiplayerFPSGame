@@ -69,13 +69,26 @@ void ABlasterPlayerController::OnPossess(APawn *InPawn)
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 {
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
-	bool bHUDValid = BlasterHUD &&
-		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
-	if (bHUDValid)
-	{
-		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
-		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
-	}
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    bool bHUDValid = BlasterHUD &&
+                     BlasterHUD->CharacterOverlay &&
+                     BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
+    if (bHUDValid)
+    {
+        FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+        BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+    }
+}
+
+void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
+{
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    bool bHUDValid = BlasterHUD &&
+                     BlasterHUD->CharacterOverlay &&
+                     BlasterHUD->CharacterOverlay->CarriedAmmoAmount;
+    if (bHUDValid)
+    {
+        FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+        BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
+    }
 }
