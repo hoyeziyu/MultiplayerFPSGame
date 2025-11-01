@@ -35,6 +35,11 @@ void UCombatComponent::BeginPlay()
 		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 		CurrentFOV = DefaultFOV;
 	}
+	if (Character->HasAuthority())
+	{
+		// 完全有服务器控制
+		InitializeCarriedAmmo();
+	}
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -93,6 +98,22 @@ void UCombatComponent::Fire()
 		}
 		StartFireTimer();
 	}
+}
+
+void UCombatComponent::Reload()
+{
+	if (CarriedAmmo > 0)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	if (Character == nullptr)
+		return;
+
+	Character->PlayReloadMontage();
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize &TraceHitTarget)
@@ -304,7 +325,16 @@ bool UCombatComponent::CanFire()
 
 void UCombatComponent::OnRep_CarriedAmmo()
 {
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
 
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -328,7 +358,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
-	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);	// 只复制给拥有客户端即可
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly); // 只复制给拥有客户端即可
 }
 
 void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
@@ -354,6 +384,18 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character); // 设置武器的拥有者，应该为了方便销毁资源，SetOwner已经是可复制的
 	EquippedWeapon->SetHUDAmmo();
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+
 	/*
 		这里的有些变化，并不会同步到client上，处理办法：
 			a. RPC可以双向发送，可以创建从server调用并在client上执行的RPC

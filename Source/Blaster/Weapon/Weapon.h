@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 class USphereComponent;
@@ -51,6 +52,8 @@ public:
 
 	void Dropped();
 	bool IsEmpty();
+
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 
 public:
 	/**
@@ -152,4 +155,7 @@ private:
 	TObjectPtr<ABlasterCharacter> BlasterOwnerCharacter;
 	UPROPERTY()
 	TObjectPtr<ABlasterPlayerController> BlasterOwnerController;
+
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
 };

@@ -29,6 +29,8 @@ public:
 
 	void EquipWeapon(AWeapon *WeaponToEquip);
 
+	void Reload();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -63,6 +65,9 @@ protected:
 
 	void Fire();
 
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+
 private:
 	void InterpFOV(float DeltaTime);
 
@@ -74,6 +79,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
+
+	void InitializeCarriedAmmo();
 
 private:
 	ABlasterCharacter* Character;
@@ -132,4 +139,7 @@ private:
 	int32 CarriedAmmo;
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
 };

@@ -68,6 +68,9 @@ class ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *FireAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *ReloadAction;
+
 public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
@@ -103,6 +106,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 
 	// UFUNCTION(NetMulticast, Unreliable)
@@ -154,6 +158,7 @@ protected:
 
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
@@ -234,8 +239,14 @@ private:
 
 	ETurningInPlace TurningInPlace;
 
+	/** 
+	* Animation montages
+	*/
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	TObjectPtr<UAnimMontage> FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = CombatComp)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	TObjectPtr<UAnimMontage> HitReactMontage;
