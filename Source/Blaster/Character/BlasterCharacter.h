@@ -263,7 +263,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health = 100.f;
 
-	TObjectPtr<ABlasterPlayerController> BlasterPlayerController;
+	ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
 
@@ -302,5 +302,5 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundCue> ElimBotSound;
 
-	TObjectPtr<ABlasterPlayerState> BlasterPlayerState;
+	ABlasterPlayerState* BlasterPlayerState;
 };

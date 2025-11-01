@@ -76,7 +76,7 @@ private:
 	void OnRep_CarriedAmmo();
 
 private:
-	TObjectPtr<ABlasterCharacter> Character;
+	ABlasterCharacter* Character;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	TObjectPtr<AWeapon> EquippedWeapon;
@@ -96,8 +96,8 @@ private:
 
 	FHUDPackage HUDPackage;
 
-	TObjectPtr<ABlasterPlayerController> Controller;
-	TObjectPtr<ABlasterHUD> HUD;
+	ABlasterPlayerController* Controller;
+	ABlasterHUD* HUD;
 
 	// HUD and crosshairs
 	float CrosshairVelocityFactor; // 速度影响
@@ -126,7 +126,7 @@ private:
 
 	// Carried ammo for the currently-equipped weapon
 	/*
-		CarriedAmmo
+		CarriedAmmo放在这里原因是，player state的复制比character更慢
 	*/
 	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
 	int32 CarriedAmmo;

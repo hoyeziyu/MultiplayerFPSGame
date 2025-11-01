@@ -15,11 +15,11 @@ struct FHUDPackage
 {
 	GENERATED_BODY()
 public:
-	TObjectPtr<UTexture2D> CrosshairsCenter;
-	TObjectPtr<UTexture2D> CrosshairsLeft;
-	TObjectPtr<UTexture2D> CrosshairsRight;
-	TObjectPtr<UTexture2D> CrosshairsTop;
-	TObjectPtr<UTexture2D> CrosshairsBottom;
+	UTexture2D *CrosshairsCenter;
+	UTexture2D *CrosshairsLeft;
+	UTexture2D *CrosshairsRight;
+	UTexture2D *CrosshairsTop;
+	UTexture2D *CrosshairsBottom;
 	float CrosshairSpread;
 	FLinearColor CrosshairsColor;
 };
@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<UUserWidget> CharacterOverlayClass;
 
-	TObjectPtr<UCharacterOverlay> CharacterOverlay;
+	UCharacterOverlay *CharacterOverlay;
 
 protected:
 	virtual void BeginPlay() override;

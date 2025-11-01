@@ -16,7 +16,7 @@ void ABlasterPlayerController::BeginPlay()
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 {
-    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
     bool bHUDValid = BlasterHUD &&
                      BlasterHUD->CharacterOverlay &&
@@ -33,7 +33,7 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 void ABlasterPlayerController::SetHUDScore(float Score)
 {
-    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
     bool bHUDValid = BlasterHUD &&
                      BlasterHUD->CharacterOverlay &&
                      BlasterHUD->CharacterOverlay->ScoreAmount;
@@ -46,7 +46,7 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 {
-    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
     bool bHUDValid = BlasterHUD &&
                      BlasterHUD->CharacterOverlay &&
                      BlasterHUD->CharacterOverlay->DefeatsAmount;
@@ -69,7 +69,7 @@ void ABlasterPlayerController::OnPossess(APawn *InPawn)
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 {
-    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
     bool bHUDValid = BlasterHUD &&
                      BlasterHUD->CharacterOverlay &&
                      BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
@@ -82,7 +82,7 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 {
-    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD.Get();
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
     bool bHUDValid = BlasterHUD &&
                      BlasterHUD->CharacterOverlay &&
                      BlasterHUD->CharacterOverlay->CarriedAmmoAmount;
