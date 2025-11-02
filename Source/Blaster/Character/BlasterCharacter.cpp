@@ -243,6 +243,7 @@ void ABlasterCharacter::PlayReloadMontage()
 
 		switch (CombatComp->EquippedWeapon->GetWeaponType())
 		{
+		// 不同武器选择不同的section
 		case EWeaponType::EWT_AssaultRifle:
 			SectionName = FName("Rifle");
 			break;
@@ -917,6 +918,12 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+ECombatState ABlasterCharacter::GetCombatState() const
+{
+    if (CombatComp == nullptr) return ECombatState::ECS_MAX;
+	return CombatComp->CombatState;
 }
 
 void ABlasterCharacter::Move(const FInputActionValue &Value)

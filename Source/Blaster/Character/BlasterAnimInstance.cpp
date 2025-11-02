@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -97,7 +98,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
             FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - mBlasterCharacterPtr->GetHitTarget()));
 			// 这里解决，当十字准心在命中目标角色后面移动到前面时，会出现跳跃现象，平滑过渡解决这个问题
             RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 30.f);
-        
         }
     }
+
+    bUseFABRIK = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading;
 }
