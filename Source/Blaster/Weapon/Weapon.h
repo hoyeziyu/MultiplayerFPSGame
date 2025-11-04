@@ -14,6 +14,7 @@ class ACasing;
 class UTexture2D;
 class ABlasterCharacter;
 class ABlasterPlayerController;
+class USoundCue;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -96,6 +97,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = CombatComp)
 	bool bAutomatic = true;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> EquipSound;
 
 protected:
 	virtual void BeginPlay() override;
