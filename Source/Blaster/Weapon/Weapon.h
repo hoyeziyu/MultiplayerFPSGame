@@ -52,8 +52,11 @@ public:
 
 	void Dropped();
 	bool IsEmpty();
+	void AddAmmo(int32 AmmoToAdd);
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 public:
 	/**

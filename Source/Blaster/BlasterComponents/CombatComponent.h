@@ -73,6 +73,7 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
+	int32 AmountToReload();
 
 private:
 	void InterpFOV(float DeltaTime);
@@ -90,6 +91,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
 
 private:
 	ABlasterCharacter* Character;
