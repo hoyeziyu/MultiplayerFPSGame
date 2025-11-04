@@ -393,6 +393,11 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
 }
 
 bool UCombatComponent::CanFire()
@@ -483,6 +488,11 @@ void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
 			this,
 			EquippedWeapon->EquipSound,
 			Character->GetActorLocation());
+	}
+
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 
 	/*
