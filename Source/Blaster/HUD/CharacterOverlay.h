@@ -31,8 +31,11 @@ public:
 	TObjectPtr<UTextBlock> DefeatsAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* WeaponAmmoAmount;
+	TObjectPtr<UTextBlock> WeaponAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* CarriedAmmoAmount;
+	TObjectPtr<UTextBlock> CarriedAmmoAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> MatchCountdownText;
 };

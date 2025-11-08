@@ -24,6 +24,10 @@ public:
 	FLinearColor CrosshairsColor;
 };
 
+
+/*
+	HUD类可以用作一个隔离区域，用于管理UserWidgets的创建、销毁、显示、隐藏等。
+*/
 UCLASS()
 class BLASTER_API ABlasterHUD : public AHUD
 {

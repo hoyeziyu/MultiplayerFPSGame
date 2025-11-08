@@ -25,6 +25,10 @@ public:
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
+
+	void SetHUDMatchCountdown(float CountdownTime);
+	virtual void Tick(float DeltaTime) override;
+
 	/*
 		一旦控制器拥有一个pawn，就可以在这个函数访问Pawn
 	*/
@@ -33,6 +37,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void SetHUDTime();
+
 private:
 	ABlasterHUD* BlasterHUD;
+
+	/*
+		game mode应该负责这个，这里为了把比赛时间显示在屏幕上，目前暂时放在player controller里。
+		需要确保客户端和服务器时间同步！！！
+	*/
+	float MatchTime = 120.f;
+	uint32 CountdownInt = 0;
 };
