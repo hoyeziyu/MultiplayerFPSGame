@@ -16,9 +16,20 @@ void ABlasterPlayerController::BeginPlay()
 
 void ABlasterPlayerController::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
-	SetHUDTime();
+    SetHUDTime();
+    CheckTimeSync(DeltaTime);
+}
+
+void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+{
+    TimeSyncRunningTime += DeltaTime;
+    if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+    {
+        ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+        TimeSyncRunningTime = 0.f;
+    }
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -102,28 +113,63 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 
 void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 {
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	bool bHUDValid = BlasterHUD &&
-		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->MatchCountdownText;
-	if (bHUDValid)
-	{
-		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
-		int32 Seconds = CountdownTime - Minutes * 60;
+    BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+    bool bHUDValid = BlasterHUD &&
+                     BlasterHUD->CharacterOverlay &&
+                     BlasterHUD->CharacterOverlay->MatchCountdownText;
+    if (bHUDValid)
+    {
+        int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
+        int32 Seconds = CountdownTime - Minutes * 60;
 
-		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
-		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
-	}
+        FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+        BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
+    }
 }
 
 void ABlasterPlayerController::SetHUDTime()
 {
-	uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetWorld()->GetTimeSeconds());
+    uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
     // 倒计时 不必每帧都算
-	if (CountdownInt != SecondsLeft)
-	{
-		SetHUDMatchCountdown(MatchTime - GetWorld()->GetTimeSeconds());
-	}
+    if (CountdownInt != SecondsLeft)
+    {
+        SetHUDMatchCountdown(MatchTime - GetServerTime());
+    }
 
-	CountdownInt = SecondsLeft;
+    CountdownInt = SecondsLeft;
+}
+
+void ABlasterPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
+{
+    /*
+        GetWorld()->GetTimeSeconds() 是获取游戏世界当前时间（以秒为单位）。返回的是自游戏世界开始运行以来的时间
+        server和client启动游戏时间不同，GetWorld()->GetTimeSeconds()对应的值也不同
+    */
+    float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
+    ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
+}
+
+void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedClientRequest)
+{   
+    // 计算往返时间RTT
+    float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
+    float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoundTripTime); // 一半RTT作为单程时间
+    ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();   // 计算客户端与服务器时间差
+}
+
+float ABlasterPlayerController::GetServerTime()
+{
+    if (HasAuthority())
+        return GetWorld()->GetTimeSeconds();
+    else
+        return GetWorld()->GetTimeSeconds() + ClientServerDelta;
+}
+
+void ABlasterPlayerController::ReceivedPlayer()
+{
+    Super::ReceivedPlayer();
+    if (IsLocalController())
+    {
+        ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+    }
 }
