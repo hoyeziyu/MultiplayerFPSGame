@@ -7,6 +7,34 @@
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 
+ABlasterGameMode::ABlasterGameMode()
+{
+    bDelayedStart = true;   // 为true，会停留在WaitingToStart状态，直到手动调用StartMatch()
+}
+
+void ABlasterGameMode::BeginPlay()
+{
+    Super::BeginPlay();
+
+    LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterGameMode::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (MatchState == MatchState::WaitingToStart)
+    {
+        //                           游戏启动launched up就开始计数    进入blaster map的时间
+        CountdownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+        if (CountdownTime <= 0.f)
+        {
+            StartMatch();
+            // 这里会进入MatchState::InProgress状态,从而产生所有player character并允许所有玩家实际控制他们的character相互射击交互
+        }
+    }
+}
+
 void ABlasterGameMode::PlayerEliminated(class ABlasterCharacter *ElimmedCharacter, class ABlasterPlayerController *VictimController, ABlasterPlayerController *AttackerController)
 {
     if (AttackerController == nullptr || AttackerController->PlayerState == nullptr)

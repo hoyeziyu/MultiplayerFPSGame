@@ -24,7 +24,6 @@ public:
 	FLinearColor CrosshairsColor;
 };
 
-
 /*
 	HUD类可以用作一个隔离区域，用于管理UserWidgets的创建、销毁、显示、隐藏等。
 */
@@ -37,10 +36,12 @@ public:
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage &Package) { HUDPackage = Package; }
 
+public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<UUserWidget> CharacterOverlayClass;
-
-	UCharacterOverlay *CharacterOverlay;
+	
+	UPROPERTY()
+	TObjectPtr<UCharacterOverlay> CharacterOverlay;
 
 protected:
 	virtual void BeginPlay() override;

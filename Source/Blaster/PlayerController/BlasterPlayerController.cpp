@@ -6,6 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
