@@ -36,6 +36,8 @@ public:
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage &Package) { HUDPackage = Package; }
 
+	void AddCharacterOverlay();
+
 public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<UUserWidget> CharacterOverlayClass;
@@ -45,7 +47,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	void AddCharacterOverlay();
+	
 
 private:
 	void DrawCrosshair(UTexture2D *Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);

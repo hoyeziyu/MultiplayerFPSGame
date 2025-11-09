@@ -7,6 +7,7 @@
 #include "BlasterPlayerController.generated.h"
 
 class ABlasterHUD;
+class UCharacterOverlay;
 
 /**
 	Player controler只存在于拥有的client和server上。
@@ -28,6 +29,7 @@ public:
 
 	void SetHUDMatchCountdown(float CountdownTime);
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/*
 		一旦控制器拥有一个pawn，就可以在这个函数访问Pawn
@@ -36,11 +38,13 @@ public:
 
 	virtual float GetServerTime();			// Synced with server world clock
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible 向server请求时间同步
+	void OnMatchStateSet(FName State);
 
 protected:
 	virtual void BeginPlay() override;
 
 	void SetHUDTime();
+	void PollInit();
 
 	// Sync time between client and server
 	/*
@@ -54,7 +58,7 @@ protected:
 		在收到 ServerRequestServerTime 请求时，向客户端报告当前服务器时间。
 		这是一个Client RPC，从server发送到client的响应(从server调用，client上执行)
 	*/
-	UFUNCTION(Client, Reliable)		// 客户端请求的时间戳		   服务器接收到客户端请求的当时时间戳
+	UFUNCTION(Client, Reliable) // 客户端请求的时间戳		   服务器接收到客户端请求的当时时间戳
 	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
 
 	void CheckTimeSync(float DeltaTime);
@@ -63,9 +67,13 @@ protected:
 	float ClientServerDelta = 0.f; // difference between client and server time
 
 	UPROPERTY(EditAnywhere, Category = Time)
-	float TimeSyncFrequency = 5.f;	// client向server请求时间同步的频率
+	float TimeSyncFrequency = 5.f; // client向server请求时间同步的频率
 
 	float TimeSyncRunningTime = 0.f; // 距离上次时间同步过去多久
+
+private:
+	UFUNCTION()
+	void OnRep_MatchState();
 
 private:
 	ABlasterHUD *BlasterHUD;
@@ -76,4 +84,16 @@ private:
 	*/
 	float MatchTime = 120.f;
 	uint32 CountdownInt = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+	FName MatchState;
+
+	UPROPERTY()
+	TObjectPtr<UCharacterOverlay> CharacterOverlay;
+	bool bInitializeCharacterOverlay = false;
+
+	float HUDHealth;
+	float HUDMaxHealth;
+	float HUDScore;
+	int32 HUDDefeats;
 };

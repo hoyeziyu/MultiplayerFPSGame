@@ -9,7 +9,7 @@
 
 ABlasterGameMode::ABlasterGameMode()
 {
-    bDelayedStart = true;   // 为true，会停留在WaitingToStart状态，直到手动调用StartMatch()
+    bDelayedStart = true; // 为true，会停留在WaitingToStart状态，直到手动调用StartMatch()
 }
 
 void ABlasterGameMode::BeginPlay()
@@ -31,6 +31,20 @@ void ABlasterGameMode::Tick(float DeltaTime)
         {
             StartMatch();
             // 这里会进入MatchState::InProgress状态,从而产生所有player character并允许所有玩家实际控制他们的character相互射击交互
+        }
+    }
+}
+
+void ABlasterGameMode::OnMatchStateSet()
+{
+    Super::OnMatchStateSet();
+
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        ABlasterPlayerController *BlasterPlayer = Cast<ABlasterPlayerController>(*It);
+        if (BlasterPlayer)
+        {
+            BlasterPlayer->OnMatchStateSet(MatchState);
         }
     }
 }
