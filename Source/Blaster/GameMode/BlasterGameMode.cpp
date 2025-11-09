@@ -38,7 +38,7 @@ void ABlasterGameMode::Tick(float DeltaTime)
 void ABlasterGameMode::OnMatchStateSet()
 {
     Super::OnMatchStateSet();
-
+    // 通知所有player controller，游戏状态改变
     for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {
         ABlasterPlayerController *BlasterPlayer = Cast<ABlasterPlayerController>(*It);

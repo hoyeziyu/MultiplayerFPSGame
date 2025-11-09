@@ -39,6 +39,7 @@ public:
 	virtual float GetServerTime();			// Synced with server world clock
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible 向server请求时间同步
 	void OnMatchStateSet(FName State);
+	void HandleMatchHasStarted();
 
 protected:
 	virtual void BeginPlay() override;
@@ -91,7 +92,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<UCharacterOverlay> CharacterOverlay;
 	bool bInitializeCharacterOverlay = false;
-
+	// 缓存HUD数据，等CharacterOverlay初始化后再设置
 	float HUDHealth;
 	float HUDMaxHealth;
 	float HUDScore;
