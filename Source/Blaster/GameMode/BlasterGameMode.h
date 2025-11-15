@@ -58,6 +58,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 10.f; // 预热时间,在 WaitingToStart状态 和 调用StartMatch() 之间的 自定义时间段
 
+	UPROPERTY(EditDefaultsOnly)
+	float MatchTime = 120.f;	// 比赛时间，在 InProgress 状态下
+
 	float LevelStartingTime = 0.f;
 
 protected:
