@@ -34,6 +34,12 @@ class ABlasterPlayerController;
 
 */
 
+namespace MatchState
+{
+	// 自定义冷却时间状态
+	extern BLASTER_API const FName Cooldown; // Match duration has been reached(比赛时长到了). Display winner and begin cooldown timer.
+}
+
 UCLASS()
 class BLASTER_API ABlasterGameMode : public AGameMode
 {
@@ -61,7 +67,10 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float MatchTime = 120.f;	// 比赛时间，在 InProgress 状态下
 
-	float LevelStartingTime = 0.f;
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownTime = 10.f;
+
+	float LevelStartingTime = 0.f;	// 关卡开始时间(进入blaster map的时间)，在 WaitingToStart 状态下
 
 protected:
 	virtual void BeginPlay() override;

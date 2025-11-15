@@ -7,6 +7,13 @@
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 
+
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown");
+}
+
+
 ABlasterGameMode::ABlasterGameMode()
 {
     bDelayedStart = true; // 为true，会停留在WaitingToStart状态，直到手动调用StartMatch()
@@ -33,6 +40,14 @@ void ABlasterGameMode::Tick(float DeltaTime)
             // 这里会进入MatchState::InProgress状态,从而产生所有player character并允许所有玩家实际控制他们的character相互射击交互
         }
     }
+    else if (MatchState == MatchState::InProgress)
+	{
+		CountdownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f)
+		{
+			SetMatchState(MatchState::Cooldown);
+		}
+	}
 }
 
 void ABlasterGameMode::OnMatchStateSet()
