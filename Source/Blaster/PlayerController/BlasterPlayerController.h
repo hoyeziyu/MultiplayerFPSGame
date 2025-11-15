@@ -10,7 +10,7 @@ class ABlasterHUD;
 class UCharacterOverlay;
 
 /**
-	Player controler只存在于拥有的client和server上。
+	Player controler只存在于拥有的client和server上。Player controler是玩家与服务器的连接桥梁。
 	对于网络我们要遵循所有权概念，只有player controler拥有的actor才可以向server发送数据，server再将数据发送给每个client。
 
 	作用: 1.管理，访问HUD（ GetHUD()返回正在使用的当前HUD ）

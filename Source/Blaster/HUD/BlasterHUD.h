@@ -26,6 +26,7 @@ public:
 };
 
 /*
+	AHUD类仅在每个client上可用，可通过Player controler访问，由Player controler自动生成
 	HUD类可以用作一个隔离区域，用于管理UserWidgets的创建、销毁、显示、隐藏等。
 */
 UCLASS()
