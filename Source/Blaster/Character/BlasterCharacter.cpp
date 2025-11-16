@@ -341,6 +341,10 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	// 	DisableInput(BlasterPlayerController);
 	// }
 	bDisableGameplay = true;
+	if (CombatComp)
+	{
+		CombatComp->FireButtonPressed(false);
+	}
 
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -412,7 +416,8 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		if (HasAuthority())
@@ -431,7 +436,8 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -444,7 +450,8 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::ReloadButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		CombatComp->Reload();
@@ -453,7 +460,8 @@ void ABlasterCharacter::ReloadButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		CombatComp->SetAiming(true);
@@ -462,7 +470,8 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		CombatComp->SetAiming(false);
@@ -504,7 +513,8 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 void ABlasterCharacter::Jump()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -518,7 +528,8 @@ void ABlasterCharacter::Jump()
 // 此函数只在Player机器上本地调用；这里播放的蒙太奇动画的action是不复制的
 void ABlasterCharacter::FireButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(true);
@@ -527,7 +538,8 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(false);
@@ -726,7 +738,10 @@ void ABlasterCharacter::Destroyed()
 	{
 		ElimBotComponent->DestroyComponent();
 	}
-	if (CombatComp && CombatComp->EquippedWeapon)
+
+	ABlasterGameMode *BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
+	if (CombatComp && CombatComp->EquippedWeapon && bMatchNotInProgress)
 	{
 		CombatComp->EquippedWeapon->Destroy();
 	}
@@ -954,7 +969,8 @@ ECombatState ABlasterCharacter::GetCombatState() const
 
 void ABlasterCharacter::Move(const FInputActionValue &Value)
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay)
+		return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
