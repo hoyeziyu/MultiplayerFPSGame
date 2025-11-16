@@ -118,6 +118,19 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	// 枚举实际上就是带有名称的整数。
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+	PollInit();
+}
+
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		// 只有对真正控制的character才执行这个
@@ -133,9 +146,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-
-	HideCameraIfCharacterClose();
-	PollInit(); // 这里目前放在这里，没放在BeginPlay中，因为
 }
 
 void ABlasterCharacter::OpenLobby()
@@ -169,6 +179,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	// 注册OverlappingWeapon变量用来replicated，只有满足COND_OwnerOnly条件的client才能接收到这个变量
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
 // SetOverlappingWeapon这里只在server中被调用，解决OnRep_OverlappingWeapon不会被server调用的问题
@@ -323,12 +334,14 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	StartDissolve();
 
 	// Disable character movement
-	GetCharacterMovement()->DisableMovement();		   // 禁止我们wasd移动
-	GetCharacterMovement()->StopMovementImmediately(); // 阻止旋转角色
-	if (BlasterPlayerController)
-	{
-		DisableInput(BlasterPlayerController);
-	}
+	// GetCharacterMovement()->DisableMovement();		   // 禁止我们wasd移动
+	// GetCharacterMovement()->StopMovementImmediately(); // 阻止旋转角色
+	// if (BlasterPlayerController)
+	// {
+	// 	DisableInput(BlasterPlayerController);
+	// }
+	bDisableGameplay = true;
+
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -399,6 +412,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		if (HasAuthority())
@@ -417,6 +431,7 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -429,6 +444,7 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::ReloadButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		CombatComp->Reload();
@@ -437,6 +453,7 @@ void ABlasterCharacter::ReloadButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		CombatComp->SetAiming(true);
@@ -445,6 +462,7 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		CombatComp->SetAiming(false);
@@ -486,6 +504,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 void ABlasterCharacter::Jump()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -499,6 +518,7 @@ void ABlasterCharacter::Jump()
 // 此函数只在Player机器上本地调用；这里播放的蒙太奇动画的action是不复制的
 void ABlasterCharacter::FireButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(true);
@@ -507,6 +527,7 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
+	if (bDisableGameplay) return;
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(false);
@@ -704,6 +725,10 @@ void ABlasterCharacter::Destroyed()
 	if (ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+	if (CombatComp && CombatComp->EquippedWeapon)
+	{
+		CombatComp->EquippedWeapon->Destroy();
 	}
 }
 
@@ -922,12 +947,14 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 
 ECombatState ABlasterCharacter::GetCombatState() const
 {
-    if (CombatComp == nullptr) return ECombatState::ECS_MAX;
+	if (CombatComp == nullptr)
+		return ECombatState::ECS_MAX;
 	return CombatComp->CombatState;
 }
 
 void ABlasterCharacter::Move(const FInputActionValue &Value)
 {
+	if (bDisableGameplay) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 

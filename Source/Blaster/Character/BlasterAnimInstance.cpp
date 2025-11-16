@@ -46,7 +46,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     */
     FRotator aimRotation = mBlasterCharacterPtr->GetBaseAimRotation();
     FRotator movementRotation = UKismetMathLibrary::MakeRotFromX(mBlasterCharacterPtr->GetVelocity());
-    UE_LOG(LogTemp, Warning, TEXT("AimRotation: %s, AimRotation Yaw: %f, movementRotation Yaw: %f,"), *aimRotation.ToString(), aimRotation.Yaw, movementRotation.Yaw);
+    // UE_LOG(LogTemp, Warning, TEXT("AimRotation: %s, AimRotation Yaw: %f, movementRotation Yaw: %f,"), *aimRotation.ToString(), aimRotation.Yaw, movementRotation.Yaw);
 
     FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation);
     DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
@@ -102,6 +102,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
     }
 
     bUseFABRIK = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading;
-    bUseAimOffsets = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading;
-	bTransformRightHand = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading;
+    bUseAimOffsets = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading && !mBlasterCharacterPtr->GetDisableGameplay();
+	bTransformRightHand = mBlasterCharacterPtr->GetCombatState() != ECombatState::ECS_Reloading && !mBlasterCharacterPtr->GetDisableGameplay();
 }
