@@ -752,10 +752,11 @@ void ABlasterCharacter::BeginPlay()
 	// Call the base class
 	Super::BeginPlay();
 
-	// Add Input Mapping Context
-	if (APlayerController *PlayerController = Cast<APlayerController>(Controller))
+	// Add Input Mapping Context  这里获取PlayerController为None，这是为什么？？？ todo
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	if (PlayerController)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem *Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
