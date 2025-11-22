@@ -341,6 +341,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	// 	DisableInput(BlasterPlayerController);
 	// }
 	bDisableGameplay = true;
+	GetCharacterMovement()->DisableMovement();	// 这里是地心引力会把角色往下拉
 	if (CombatComp)
 	{
 		CombatComp->FireButtonPressed(false);
@@ -752,7 +753,12 @@ void ABlasterCharacter::BeginPlay()
 	// Call the base class
 	Super::BeginPlay();
 
-	// Add Input Mapping Context  这里获取PlayerController为None，这是为什么？？？ todo
+	/*
+		Add Input Mapping Context
+		todo 这里获取PlayerController为None，这是为什么？？？ 
+		把gamemode中bDelayedStart设置为false就可以移动了，why？？？
+		showdebug enhancedinput 命令查看输入映射
+	*/
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	if (PlayerController)
 	{
