@@ -16,7 +16,8 @@ public class Blaster : ModuleRules
 			"InputCore",
 			"EnhancedInput",
 			"OnlineSubsystem",
-			"OnlineSubsystemSteam"
+			"OnlineSubsystemSteam",
+			"Niagara"
 			});
 	}
 }
