@@ -20,6 +20,7 @@ AWeapon::AWeapon()
 		所以不被复制的actor也将拥有authority,如果bReplicates是true,在server上生成，然后生成行为propagate到clients上，server维护authority
 	*/
 	bReplicates = true;
+	SetReplicateMovement(true);
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);

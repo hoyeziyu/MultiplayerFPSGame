@@ -9,6 +9,7 @@
 class UNiagaraSystem;
 class UNiagaraComponent;
 class USoundCue;
+class URocketMovementComponent;
 
 /**
  *
@@ -45,6 +46,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundAttenuation> LoopingSoundAttenuation;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<URocketMovementComponent> RocketMovementComponent;
 
 private:
 	UPROPERTY(VisibleAnywhere)

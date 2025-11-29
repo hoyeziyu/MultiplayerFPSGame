@@ -2,7 +2,6 @@
 
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
@@ -26,9 +25,6 @@ AProjectile::AProjectile()
 	// 这里不用ECollisionChannel::ECC_Pawn的原因是：如果用Pawn通道，打到的是UCapsuleComponent, 而不是Character Mesh，
 	// 我们在mesh上追踪，实际上也是追踪物理asset
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
-
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-	ProjectileMovementComponent->bRotationFollowsVelocity = true; // 确保子弹的旋转角度与自身速度方向保持一致
 }
 
 void AProjectile::BeginPlay()
@@ -49,7 +45,16 @@ void AProjectile::BeginPlay()
 	if (HasAuthority())
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+		/*
+		忽略发射者的碰撞,防止自爆；
+		火箭弹的自定义移动组件URocketMovementComponent存在一个问题。当火箭弹与目标重叠时，
+		它不会击中owner（这很好），但同时也会导致火箭弹完全停止飞行。当目标owner移开后，火箭弹才会再次移动
+	*/
+		CollisionBox->IgnoreActorWhenMoving(GetOwner(), true);
 	}
+
+	// 放在这里 和owner的碰撞太早了（应该指的是初始化生成子弹的时候），还是会自爆
+	// CollisionBox->IgnoreActorWhenMoving(GetOwner(), true);
 }
 
 void AProjectile::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
