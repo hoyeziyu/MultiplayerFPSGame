@@ -264,6 +264,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Pistol:
 			SectionName = FName("Rifle");	// todo 晚点替换掉
 			break;
+		case EWeaponType::EWT_SubmachineGun:
+			SectionName = FName("Rifle");	// todo 晚点替换掉
+			break;
 		}
 
 		AnimInstance->Montage_JumpToSection(SectionName);
