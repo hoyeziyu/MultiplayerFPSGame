@@ -18,13 +18,21 @@ public:
 
     UBuffComponent();
 
+    void Heal(float HealAmount, float HealingTime);
+
 public:
     friend ABlasterCharacter;
 
 protected:
     virtual void BeginPlay() override;
 
+    void HealRampUp(float DeltaTime);
+
 private:
     UPROPERTY()
     TObjectPtr<ABlasterCharacter> Character;
+
+    bool bHealing = false;
+	float HealingRate = 0;
+	float AmountToHeal = 0.f;
 };

@@ -128,10 +128,14 @@ public:
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return CombatComp; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
+
+	void UpdateHUDHealth();
 
 public:
 	UPROPERTY(Replicated)
@@ -189,7 +193,6 @@ protected:
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-	void UpdateHUDHealth();
 	// Poll for any relelvant classes and initialize our HUD （player state在第一帧无效，所以需要PollInit函数，可以找到player state的地方）
 	void PollInit();
 	void RotateInPlace(float DeltaTime);
@@ -220,7 +223,7 @@ private:
 		2.将变量标记为复制时，需要注册变量（GetLifetimeReplicatedProps函数中）进行复制
 	*/
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
 	void ElimTimerFinished();
 
