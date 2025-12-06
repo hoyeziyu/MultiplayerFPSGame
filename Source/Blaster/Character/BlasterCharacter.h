@@ -24,6 +24,7 @@ class UAnimMontage;
 class ABlasterPlayerController;
 class USoundCue;
 class ABlasterPlayerState;
+class UBuffComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -240,6 +241,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCombatComponent> CombatComp;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBuffComponent> Buff;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;
