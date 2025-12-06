@@ -31,6 +31,10 @@ protected:
         bool bFromSweep,
         const FHitResult &SweepResult);
 
+protected:
+    UPROPERTY(EditAnywhere)
+    float BaseTurnRate = 45.f;
+
 private:
     UPROPERTY(EditAnywhere)
     TObjectPtr<USphereComponent> OverlapSphere;
@@ -40,6 +44,4 @@ private:
 
     UPROPERTY(EditAnywhere)
     TObjectPtr<UStaticMeshComponent> PickupMesh;
-
-public:
 };
