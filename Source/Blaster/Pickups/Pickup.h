@@ -8,6 +8,8 @@
 
 class USphereComponent;
 class USoundCue;
+class UNiagaraComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class BLASTER_API APickup : public AActor
@@ -44,4 +46,10 @@ private:
 
     UPROPERTY(EditAnywhere)
     TObjectPtr<UStaticMeshComponent> PickupMesh;
+
+    UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UNiagaraComponent> PickupEffectComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> PickupEffect;
 };

@@ -19,6 +19,8 @@ public:
     UBuffComponent();
 
     void Heal(float HealAmount, float HealingTime);
+    void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
+	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
 
 public:
     friend ABlasterCharacter;
@@ -29,10 +31,21 @@ protected:
     void HealRampUp(float DeltaTime);
 
 private:
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+
+private:
     UPROPERTY()
     TObjectPtr<ABlasterCharacter> Character;
 
+    // Heal buff
     bool bHealing = false;
-	float HealingRate = 0;
-	float AmountToHeal = 0.f;
+    float HealingRate = 0; // 目前的治愈率，每秒治愈多少个点
+    float AmountToHeal = 0.f;
+
+    // Speed buff
+    FTimerHandle SpeedBuffTimer;
+    void ResetSpeeds();
+    float InitialBaseSpeed;
+    float InitialCrouchSpeed;
 };

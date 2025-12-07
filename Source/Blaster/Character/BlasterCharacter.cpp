@@ -225,6 +225,10 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (Buff)
 	{
 		Buff->Character = this;
+		Buff->SetInitialSpeeds(
+			GetCharacterMovement()->MaxWalkSpeed, 
+			GetCharacterMovement()->MaxWalkSpeedCrouched
+		);
 	}
 }
 
@@ -738,7 +742,7 @@ float ABlasterCharacter::CalculateSpeed()
 void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	if (Health < LastHealth)
+	if (Health < LastHealth)	// 血条下降才播放
 	{
 		PlayHitReactMontage();
 	}
