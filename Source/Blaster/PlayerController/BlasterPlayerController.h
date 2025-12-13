@@ -14,7 +14,18 @@ class UCharacterOverlay;
 	对于网络我们要遵循所有权概念，只有player controler拥有的actor才可以向server发送数据，server再将数据发送给每个client。
 
 	作用: 1.管理，访问HUD（ GetHUD()返回正在使用的当前HUD ）
- */
+
+
+	lag compensation（滞后补偿）实现方案：
+		1. character movement component使用interpolation 和 extrapolation（插值和外推）、rubber-banding（橡皮筋效应）的组合
+		
+		2. server-side rewind 过程 (可能存在当队友挡在你面前也会出现命中的情况)
+			a. client scores a hit
+			b. tell the server
+			c. server rewinds time
+			d. server checks for valid hit
+
+*/
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
