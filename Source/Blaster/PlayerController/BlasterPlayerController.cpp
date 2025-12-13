@@ -14,6 +14,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/GameState/BlasterGameState.h"
+#include "Components/Image.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -71,6 +72,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
     SetHUDTime();
     CheckTimeSync(DeltaTime);
     PollInit();
+    CheckPing(DeltaTime);
 }
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
@@ -81,6 +83,70 @@ void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
         ServerRequestServerTime(GetWorld()->GetTimeSeconds());
         TimeSyncRunningTime = 0.f;
     }
+}
+
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+    HighPingRunningTime += DeltaTime;
+    if (HighPingRunningTime > CheckPingFrequency)
+    {
+        PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState.Get();
+        if (PlayerState)
+        {
+            if (PlayerState->GetPingInMilliseconds() * 4 > HighPingThreshold) // ping is compressed; it's actually ping / 4
+            {
+                HighPingWarning();
+                PingAnimationRunningTime = 0.f;
+            }
+        }
+        HighPingRunningTime = 0.f;
+    }
+    bool bHighPingAnimationPlaying =
+        BlasterHUD && BlasterHUD->CharacterOverlay &&
+        BlasterHUD->CharacterOverlay->HighPingAnimation &&
+        BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnimation);
+    if (bHighPingAnimationPlaying)
+    {
+        PingAnimationRunningTime += DeltaTime;
+        if (PingAnimationRunningTime > HighPingDuration)
+        {
+            StopHighPingWarning();
+        }
+    }
+}
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->HighPingImage &&
+		BlasterHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
+		BlasterHUD->CharacterOverlay->PlayAnimation(
+			BlasterHUD->CharacterOverlay->HighPingAnimation,
+			0.f,
+			5);
+	}
+}
+
+void ABlasterPlayerController::StopHighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->HighPingImage &&
+		BlasterHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
+		if (BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnimation))
+		{
+			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);
+		}
+	}
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -336,7 +402,8 @@ void ABlasterPlayerController::HandleMatchHasStarted()
     BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
     if (BlasterHUD)
     {
-        if (BlasterHUD->CharacterOverlay == nullptr) BlasterHUD->AddCharacterOverlay();
+        if (BlasterHUD->CharacterOverlay == nullptr)
+            BlasterHUD->AddCharacterOverlay();
         if (BlasterHUD->Announcement)
         {
             BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
@@ -361,42 +428,42 @@ void ABlasterPlayerController::HandleCooldown()
             FString AnnouncementText("New Match Starts In:");
             BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 
-			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-			ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
-			if (BlasterGameState && BlasterPlayerState)
-			{
-				TArray<ABlasterPlayerState*> TopPlayers = BlasterGameState->TopScoringPlayers;
-				FString InfoTextString;
-				if (TopPlayers.Num() == 0)
-				{
-					InfoTextString = FString("There is no winner.");
-				}
-				else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
-				{
-					InfoTextString = FString("You are the winner!");
-				}
-				else if (TopPlayers.Num() == 1)
-				{
-					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
-				}
-				else if (TopPlayers.Num() > 1)
-				{
-					InfoTextString = FString("Players tied for the win:\n");
-					for (auto TiedPlayer : TopPlayers)
-					{
-						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
-					}
-				}
+            ABlasterGameState *BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+            ABlasterPlayerState *BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+            if (BlasterGameState && BlasterPlayerState)
+            {
+                TArray<ABlasterPlayerState *> TopPlayers = BlasterGameState->TopScoringPlayers;
+                FString InfoTextString;
+                if (TopPlayers.Num() == 0)
+                {
+                    InfoTextString = FString("There is no winner.");
+                }
+                else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
+                {
+                    InfoTextString = FString("You are the winner!");
+                }
+                else if (TopPlayers.Num() == 1)
+                {
+                    InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+                }
+                else if (TopPlayers.Num() > 1)
+                {
+                    InfoTextString = FString("Players tied for the win:\n");
+                    for (auto TiedPlayer : TopPlayers)
+                    {
+                        InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+                    }
+                }
 
-				BlasterHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
-			}
+                BlasterHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
+            }
         }
     }
-	// 这不放在if (BlasterHUD)里面，因为server端的模拟代理中BlasterHUD可能为空
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
-	if (BlasterCharacter && BlasterCharacter->GetCombat())
-	{
-		BlasterCharacter->bDisableGameplay = true;
-		BlasterCharacter->GetCombat()->FireButtonPressed(false);
-	}
+    // 这不放在if (BlasterHUD)里面，因为server端的模拟代理中BlasterHUD可能为空
+    ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+    if (BlasterCharacter && BlasterCharacter->GetCombat())
+    {
+        BlasterCharacter->bDisableGameplay = true;
+        BlasterCharacter->GetCombat()->FireButtonPressed(false);
+    }
 }

@@ -38,4 +38,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> MatchCountdownText;
+
+	// ping
+	UPROPERTY(meta = (BindWidget))
+	class UImage* HighPingImage;
+
+	// Transient表示此属性没有序列化到磁盘
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* HighPingAnimation;
 };
