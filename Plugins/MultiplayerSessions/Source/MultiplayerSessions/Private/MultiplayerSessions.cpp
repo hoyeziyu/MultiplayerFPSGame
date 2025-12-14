@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:afb31bce0447e2b770adefbdba039b198dd0cede5c8444642223cedeb47a990e
-size 665
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "MultiplayerSessions.h"
+
+#define LOCTEXT_NAMESPACE "FMultiplayerSessionsModule"
+
+void FMultiplayerSessionsModule::StartupModule()
+{
+	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+}
+
+void FMultiplayerSessionsModule::ShutdownModule()
+{
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+}
+
+#undef LOCTEXT_NAMESPACE
+	
+IMPLEMENT_MODULE(FMultiplayerSessionsModule, MultiplayerSessions)
