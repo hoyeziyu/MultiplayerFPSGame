@@ -69,6 +69,7 @@ protected:
 	void SetHUDCrosshairs(float DeltaTime);
 
 	void Fire();
+	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(Server, Reliable)
 	void ServerReload();

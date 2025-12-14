@@ -116,6 +116,7 @@ void UCombatComponent::Fire()
 		bCanFire = false;
 		// 如果从server调用，它将在server上执行（只在server上执行）；如果从client调用，它将在server上执行（只在server上执行）
 		ServerFire(HitTarget);
+		LocalFire(HitTarget);
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = .75f;
@@ -215,8 +216,15 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize &Trac
 	MulticastFire(TraceHitTarget);
 }
 
+// 这些重要设置丢到server上处理
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize &TraceHitTarget)
-{ // 这些重要设置丢到server上处理
+{
+	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority()) return;
+	LocalFire(TraceHitTarget);
+}
+
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
+{ 
 	if (EquippedWeapon == nullptr)
 		return;
 	if (Character && CombatState == ECombatState::ECS_Unoccupied)
