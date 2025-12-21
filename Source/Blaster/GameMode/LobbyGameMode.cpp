@@ -10,6 +10,20 @@ void ALobbyGameMode::PostLogin(APlayerController *NewPlayer)
 
     int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 
+    if (GEngine)
+    {
+        APlayerState *playerState = NewPlayer->GetPlayerState<APlayerState>();
+        if (playerState)
+        {
+            FString playerName = playerState->GetPlayerName();
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                15.f,
+                FColor::Cyan,
+                FString::Printf(TEXT("Player Name: %s joined the game! play in game: %d players!"), *playerName, NumberOfPlayers));
+        }
+    }
+
     if (NumberOfPlayers == 2)
     {
         UWorld *World = GetWorld();
