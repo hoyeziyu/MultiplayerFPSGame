@@ -14,6 +14,7 @@ class UInputAction;
 struct FInputActionValue;
 class UWidgetComponent;
 class AWeapon;
+class UCombatComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -46,6 +47,10 @@ class ABlasterCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Equip捡枪动作 Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *EquipAction;
+
 public:
 	ABlasterCharacter();
 	
@@ -56,6 +61,8 @@ public:
 
 	// 配置哪些变量需要从服务器同步（复制）到客户端
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void PostInitializeComponents() override;
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
@@ -72,9 +79,20 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
-	// OnRep_OverlappingWeapon中OverlappingWeapon是复制的变量名（约定），会自动调用
+	/*
+		OnRep_OverlappingWeapon中OverlappingWeapon是复制的变量名（约定），会自动调用
+		OnRep_OverlappingWeapon的参数只能是是被复制的变量类型（eg:AWeapon*）
+	*/
 	UFUNCTION()
-	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);	//  LastWeapon是发生复制之前的旧值
+
+	void EquipButtonPressed();
+	/*
+		RPC函数，必须指定rpc是否可靠（信息从client发送到server，不可靠信息可能会丢包），server RPC只会在server上执行
+		--- 远程过程调用rpc 是 可以在一台机器（client）上调用的函数，并在另一台机器（server）上执行 ---
+	*/
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
 
 protected:
 	/*
@@ -89,6 +107,9 @@ protected:
 	TObjectPtr<AWeapon> OverlappingWeapon;
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCombatComponent> CombatComp;
+
 // 								                      意味我们将private变量暴露在蓝图中
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UWidgetComponent> OverheadWidget;

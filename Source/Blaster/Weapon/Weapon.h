@@ -26,8 +26,13 @@ class BLASTER_API AWeapon : public AActor
 public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
+
+	FORCEINLINE USphereComponent *GetAreaSphere() const { return AreaSphere; }	// 用来碰撞检测
 
 	void ShowPickupWidget(bool bShowWidget);
+
+	void SetWeaponState(EWeaponState State);
 
 protected:
 	virtual void BeginPlay() override;
@@ -52,6 +57,10 @@ protected:
 	);
 
 private:
+	UFUNCTION()
+	void OnRep_WeaponState();
+
+private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 
@@ -59,8 +68,9 @@ private:
 	TObjectPtr<USphereComponent> AreaSphere;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	EWeaponState WeaponState;
-
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<UWidgetComponent> PickupWidget;
+
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
+	EWeaponState WeaponState;
+	
 };

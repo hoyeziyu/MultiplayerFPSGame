@@ -13,6 +13,7 @@
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -56,6 +57,9 @@ ABlasterCharacter::ABlasterCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
+	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	CombatComp->SetIsReplicated(true);	// 设置为复制组件
+
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 }
@@ -76,7 +80,7 @@ void ABlasterCharacter::BeginPlay()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Input
+// Input	输入系统设计遵循一个核心原则：输入是本地客户端的私有行为【UInputMappingContext (IMC) 以及其中注册的 UInputAction 完全不会自动复制（Replicate）】
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -92,6 +96,9 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
+
+		// EquipAction
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 	}
 	else
 	{
@@ -145,6 +152,16 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 }
 
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (CombatComp)
+	{
+		CombatComp->Character = this;
+	}
+}
+
 // SetOverlappingWeapon这里只在server中被调用，解决OnRep_OverlappingWeapon不会被server调用的问题
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
 {
@@ -165,12 +182,36 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
+	// 此时的 OverlappingWeapon 已经是【新值】了
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
 	}
+	// 此时的 LastWeapon 是【旧值】
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
 	}
+}
+
+void ABlasterCharacter::EquipButtonPressed()
+{
+	if(CombatComp == nullptr) return;
+
+	if(HasAuthority())	// server
+	{
+		CombatComp->EquipWeapon(OverlappingWeapon);
+	}
+	else				// client
+	{
+		// client调用ServerEquipButtonPressed 发送RPC请求到server，server调用执行ServerEquipButtonPressed_Implementation函数
+		ServerEquipButtonPressed();
+	}
+}
+
+// 这里只会在server上执行；						  _Implementation 必须跟在函数声明后面,约定
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if(CombatComp == nullptr) return;
+	CombatComp->EquipWeapon(OverlappingWeapon);
 }
