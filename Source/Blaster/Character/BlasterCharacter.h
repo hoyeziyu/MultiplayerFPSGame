@@ -51,6 +51,13 @@ class ABlasterCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *EquipAction;
 
+	// 蹲起
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *AimAction;
+
 public:
 	ABlasterCharacter();
 	
@@ -65,6 +72,9 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	bool IsWeaponEquipped();
+	bool IsAiming();
 
 protected:
 	/** Called for movement input */
@@ -93,6 +103,11 @@ protected:
 	*/
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
+
+	void CrouchButtonPressed();
+
+	void AimButtonPressed();
+	void AimButtonReleased();
 
 protected:
 	/*

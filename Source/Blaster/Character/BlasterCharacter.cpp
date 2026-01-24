@@ -62,6 +62,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	// 给你的角色开启“允许蹲下”的权限
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -99,6 +101,12 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// EquipAction
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
+
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchButtonPressed);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &ABlasterCharacter::CrouchButtonPressed);
+
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
 	}
 	else
 	{
@@ -180,6 +188,16 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
 	}
 }
 
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+    return CombatComp && CombatComp->EquippedWeapon;
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+    return (CombatComp && CombatComp->bAiming);
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	// 此时的 OverlappingWeapon 已经是【新值】了
@@ -214,4 +232,32 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if(CombatComp == nullptr) return;
 	CombatComp->EquipWeapon(OverlappingWeapon);
+}
+
+void ABlasterCharacter::CrouchButtonPressed()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
+void ABlasterCharacter::AimButtonPressed()
+{
+	if (CombatComp)
+	{
+		CombatComp->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimButtonReleased()
+{
+	if (CombatComp)
+	{
+		CombatComp->SetAiming(false);
+	}
 }
